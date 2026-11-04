@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.streamlit/
+*.log
+
+# 参考答案，不进仓库
+_solutions/
+.idea/
+.cache/

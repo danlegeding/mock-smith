@@ -1,0 +1,96 @@
+"""节点 4：select_question —— 从题池里挑下一题。
+
+这一步**不调用大模型**，全是规则。原因：挑题是"根据已问情况做选择"，
+规则能说清、能测、能离线复现；交给模型反而每次行为不一样，面试里没法解释。
+
+规则（按优先级）：
+1. 轮数到 MAX_TURNS → 不问了，结束
+2. 这一题已经问过（按题干去重）→ 跳过
+3. 这个维度已经问够 MAX_QUESTIONS_PER_DIM 道 → 跳过
+4. 这个维度被跳过 MAX_SKIPS_PER_DIM 次 → 跳过（别继续为难人）
+5. 在剩下的题里：优先问"被问次数最少的维度"，同分时先问难度低的
+"""
+
+from __future__ import annotations
+
+from collections import Counter
+from typing import Any
+
+from src.graph.policy import MAX_QUESTIONS_PER_DIM, MAX_SKIPS_PER_DIM, MAX_TURNS
+
+
+def _count_turns_by_dimension(turns: list[dict[str, Any]]) -> tuple[Counter, Counter]:
+    """按维度统计：问了几次（Asked）、跳过几次（Skipped）。
+
+    Args:
+        turns: 已发生的问答轮次列表。
+
+    Returns:
+        tuple[Counter, Counter]: (asked, skipped)，键都是维度英文值。
+    """
+    asked: Counter = Counter()
+    skipped: Counter = Counter()
+    for turn in turns:
+        dimension = turn["question"]["dimension"]
+        asked[dimension] += 1
+        if turn.get("skipped"):
+            skipped[dimension] += 1
+    return asked, skipped
+
+
+def _pick_question(
+    plan: list[dict[str, Any]],
+    turns: list[dict[str, Any]],
+    hint: int | None = None,
+) -> dict[str, Any] | None:
+    """从题池里挑下一题；没有可问的返回 None（表示该结束了）。
+
+    Args:
+        plan: 完整题池。
+        turns: 已问过的轮次。
+        hint: decide_next 给的难度提示（1/2/3），仅在挑题时参考难易排序。
+
+    Returns:
+        dict | None: 选中的题目 dict；无可问题目时返回 None。
+    """
+    if len(turns) >= MAX_TURNS:
+        return None
+
+    asked, skipped = _count_turns_by_dimension(turns)
+    asked_texts = {turn["question"]["text"] for turn in turns}
+
+    candidates: list[dict[str, Any]] = []
+    for question in plan:
+        dimension = question["dimension"]
+        if question["text"] in asked_texts:
+            continue
+        if asked[dimension] >= MAX_QUESTIONS_PER_DIM:
+            continue
+        if skipped[dimension] >= MAX_SKIPS_PER_DIM:
+            continue
+        candidates.append(question)
+
+    if not candidates:
+        return None
+
+    # 先问"最没问过的维度"；decide_next 给了难度提示时，优先挑贴近提示难度的题
+    if hint:
+        candidates.sort(
+            key=lambda q: (asked[q["dimension"]], abs(q["difficulty"] - hint), q["difficulty"])
+        )
+    else:
+        candidates.sort(key=lambda q: (asked[q["dimension"]], q["difficulty"]))
+    return candidates[0]
+
+
+def select_question(state: dict[str, Any]) -> dict[str, Any]:
+    """LangGraph 节点函数：挑出下一题放进 current_question。
+
+    - 有题可问 → {"current_question": {...}}
+    - 问完了 → {"current_question": None}（路由函数据此走向 END）
+    """
+    plan = state.get("question_plan", [])
+    turns = list(state.get("turns") or [])
+    question = _pick_question(plan, turns, state.get("next_difficulty"))
+    # next_difficulty 是一次性提示：用掉就清空，否则会一直影响后面所有选题
+    return {"current_question": question, "next_difficulty": None}
