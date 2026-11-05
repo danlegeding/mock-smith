@@ -34,7 +34,8 @@ checks: list[tuple[str, bool, str]] = []
 
 def check(name: str, ok: bool, detail: str = "") -> None:
     checks.append((name, ok, detail))
-    print(f"{'✓' if ok else '✗'} {name}" + (f"  ({detail})" if detail else ""))
+    # 不用 ✓/✗：Windows 控制台默认 GBK，输出重定向时会直接 UnicodeEncodeError 崩掉
+    print(f"[{'PASS' if ok else 'FAIL'}] {name}" + (f"  ({detail})" if detail else ""))
 
 
 def main() -> int:
@@ -73,6 +74,7 @@ def main() -> int:
         # ---- 3. 一轮轮回答，直到拿到报告
         current = first
         turn_no = 1
+        answered = 0
         while current["type"] == "question" and turn_no <= len(FAKE_ANSWERS) + 2:
             payload = {"session_id": session_id, "answer": FAKE_ANSWERS[(turn_no - 1) % len(FAKE_ANSWERS)]}
             resp = client.post(f"/sessions/{session_id}/answer", json=payload)
@@ -80,6 +82,7 @@ def main() -> int:
             if resp.status_code != 200:
                 print(resp.text[:800])
                 return 1
+            answered += 1
             current = resp.json()
             if current["type"] == "question":
                 print(f"  第 {current['turn_index'] + 1} 题 [{current['question']['dimension']}] {current['question']['text']}")
@@ -107,7 +110,7 @@ def main() -> int:
         transcript = client.get(f"/sessions/{session_id}/transcript")
         check("GET /transcript 200", transcript.status_code == 200, str(transcript.status_code))
         turns = transcript.json().get("turns") or [] if transcript.status_code == 200 else []
-        check("记录里有本场问答", len(turns) == turn_no, f"{len(turns)} vs {turn_no}")
+        check("记录里有本场问答", len(turns) == answered, f"{len(turns)} 轮记录 vs {answered} 次作答")
         check("每轮都能定位到题目", all(t.get("question", {}).get("text") for t in turns))
 
         # ---- 6. 结束后的边界行为
