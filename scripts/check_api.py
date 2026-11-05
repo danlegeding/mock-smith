@@ -1,7 +1,7 @@
 """端到端验收：对着已经跑起来的 API 打一遍完整面试。
 
 前置：数据库容器在跑 + uvicorn 已启动
-    python -m uvicorn src.app:app --port 8010
+    python -m uvicorn src -.app:app --port 8010
 跑法：
     python scripts/check_api.py                      # 默认 http://127.0.0.1:8010
     python scripts/check_api.py --base-url http://127.0.0.1:8000

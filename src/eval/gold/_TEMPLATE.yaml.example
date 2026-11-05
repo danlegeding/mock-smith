@@ -1,0 +1,24 @@
+# gold_XXX.yaml —— 复制这个文件来标新的一条，改名成 gold_003.yaml、gold_004.yaml …
+#
+# 三条规则（`python scripts/check_gold.py` 会替你检查）：
+#   1. question_id 必须和文件名一致（gold_003.yaml → gold_003）
+#   2. scoring_dimension 只能填五个英文值之一，见下面注释
+#   3. human_evidence_quote 必须是从 candidate_answer 里逐字照抄的一句，抄不准会报错
+#
+# 五个维度（复制其中一个，不要自己造）：
+#   tech_depth / project_authenticity / engineering_thinking / communication / job_match
+# 三个档位：
+#   bad 明显不足（说空话、答非所问） / ok 达到实习水平（说清楚了做法） / good 超出预期（有细节、有取舍、有量化）
+#
+# 删除下面所有以 # 开头的说明行再填也行；# 开头是注释，不影响解析。
+schema_version: 1
+question_id: gold_XXX
+question_text: 这里写题目原文
+scoring_dimension: tech_depth
+question_difficulty: 2
+candidate_answer: |
+  这里写候选人的回答原文（不要润色，要保留它真实的毛病）。
+  至少 20 个字。
+human_quality_level: ok
+human_evidence_quote: "从回答里挑一句能支撑你判断的话"
+annotation_note: "一句话说明为什么标这档"

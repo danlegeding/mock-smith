@@ -1,0 +1,14 @@
+# gold_002 —— 示例：communication / bad
+# 标注说明：回答只有"多沟通"这种空话，没有任何具体做法、没有一次真实分歧的描述，
+# 属于"明显不足"（bad）。注意人工标注不要润色候选人的话。
+schema_version: 1
+question_id: gold_002
+question_text: 你平时和产品或算法同学对效果分歧时，怎么对齐？
+scoring_dimension: communication
+question_difficulty: 2
+candidate_answer: |
+  就多沟通吧，大家都是为了项目好，实在不行就听产品经理的。
+  具体的也记不太清了，反正一般不会吵起来。
+human_quality_level: bad
+human_evidence_quote: "就多沟通吧"
+annotation_note: "全是套话，没有一次具体分歧、没有量化口径，无法判断真实沟通能力"

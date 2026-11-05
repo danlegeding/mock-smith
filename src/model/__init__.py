@@ -1,4 +1,4 @@
-"""全项目的数据契约（Pydantic 模型），按用途拆成子模块。
+﻿"""全项目的数据契约（Pydantic 模型），按用途拆成子模块。
 
 为什么拆：一个 240 行的 models 文件，改一处要在长文件里翻；拆开之后
 "这个问题属于哪一类"决定了它在哪个文件，`from src.model import Question`
@@ -15,6 +15,7 @@ model/
 ├─ score.py     评分：Signals / DimensionScore / AnswerScore（valid、avg 自动算）
 ├─ turn.py      一问一答：Turn
 ├─ report.py    报告：Strength / Weakness / ReportDraft（模型写）/ Report（代码补齐）
+├─ gold.py      评测：GoldItem（人工标注的标准答案，见 src/eval/gold/）
 └─ api.py       接口：SessionCreate / SessionCreated / AnswerIn / TurnOut
 ```
 
@@ -43,6 +44,7 @@ from .enums import (
     Seniority,
 )
 from .gap import GapItem
+from .gold import LEVEL_TO_SCORE, GoldItem, QualityLevel
 from .profile import ExperienceItem, JDProfile, ProjectItem, ResumeProfile, SkillItem
 from .question import Question, QuestionPlan
 from .report import Report, ReportDraft, Strength, Weakness
@@ -66,6 +68,10 @@ __all__ = [
     "ResumeProfile",
     # gap
     "GapItem",
+    # gold
+    "GoldItem",
+    "QualityLevel",
+    "LEVEL_TO_SCORE",
     # question
     "Question",
     "QuestionPlan",
@@ -88,3 +94,6 @@ __all__ = [
     "AnswerIn",
     "TurnOut",
 ]
+
+
+

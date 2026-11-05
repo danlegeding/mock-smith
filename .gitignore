@@ -1,11 +1,11 @@
-.venv/
+ï»¿.venv/
 __pycache__/
 *.pyc
 .env
 .streamlit/
 *.log
 
-# ²Î¿¼´ğ°¸£¬²»½ø²Ö¿â
+# å‚è€ƒç­”æ¡ˆï¼Œå·² gitignore
 _solutions/
 .idea/
 .cache/

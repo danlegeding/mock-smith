@@ -1,0 +1,15 @@
+# gold_001 —— 示例：tech_depth / good
+# 标注说明：这段回答同时给了"做法"（retriever 传进 RetrievalQA）和"具体坑"（chunk 太长、
+# 限制 top_k），超过"达到实习水平"（ok），所以标 good。
+schema_version: 1
+question_id: gold_001
+question_text: 你在客服小助手里是怎么用 LangChain 串起来的？
+scoring_dimension: tech_depth
+question_difficulty: 2
+candidate_answer: |
+  RetrievalQA 里把向量库当 retriever 传进去，prompt 里拼了历史对话。
+  踩过最大的坑是 retriever 返回的 chunk 太长，把上下文塞爆了，回答直接开始胡编；
+  后来限制 top_k=3 并且给每个 chunk 加了来源标题，效果才稳。
+human_quality_level: good
+human_evidence_quote: "后来限制 top_k=3 并且给每个 chunk 加了来源标题，效果才稳"
+annotation_note: "说清了机制也说了自己的调参过程，能看出真跑过；但没解释为什么不用 Agent 方案"
