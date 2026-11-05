@@ -103,6 +103,13 @@ def main() -> int:
         check("GET /report 200", got.status_code == 200, str(got.status_code))
         check("落库报告与返回值一致", got.status_code == 200 and got.json()["overall"] == report.get("overall"))
 
+        # ---- 5.5 问答记录（前端「④ 记录页」用的就是这个接口）
+        transcript = client.get(f"/sessions/{session_id}/transcript")
+        check("GET /transcript 200", transcript.status_code == 200, str(transcript.status_code))
+        turns = transcript.json().get("turns") or [] if transcript.status_code == 200 else []
+        check("记录里有本场问答", len(turns) == turn_no, f"{len(turns)} vs {turn_no}")
+        check("每轮都能定位到题目", all(t.get("question", {}).get("text") for t in turns))
+
         # ---- 6. 结束后的边界行为
         after = client.post(f"/sessions/{session_id}/answer", json={"session_id": session_id, "answer": "x"})
         check("结束后再回答 → 409", after.status_code == 409, str(after.status_code))

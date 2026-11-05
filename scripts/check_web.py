@@ -88,6 +88,10 @@ def main() -> int:
     check("报告页有综合评分", any("综合评分" in str(m.label) for m in report.metric))
     check("报告页显示下一步", any("补一个端到端可跑的 Docker 部署" in m.value for m in report.markdown))
 
+    records = render_screen(page="记录", records_transcript=None, records_report=None, records_pick=None)
+    check("④ 记录页执行无异常", not records.exception)
+    check("记录页标题已渲染", any(h.value == "④ 会话记录" for h in records.header))
+
     failed = [name for name, ok, _ in checks if not ok]
     print()
     if failed:

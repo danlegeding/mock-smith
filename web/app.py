@@ -36,6 +36,7 @@ DIMENSION_LABELS = {
 }
 DIFFICULTY_LABELS = {1: "基础", 2: "中等", 3: "深入"}
 KIND_LABELS = {"opening": "主问题", "followup": "追问", "scenario": "情景题", "deep_dive": "深挖"}
+STATUS_LABELS = {"active": "进行中", "finished": "已结束", "abandoned": "已放弃"}
 
 
 # 注意：`st.set_page_config` 必须第一个 st 调用，但**不能写在模块顶层**——
@@ -54,6 +55,9 @@ def init_state() -> None:
         "turn": None,       # 最近一次 TurnOut
         "report": None,     # 最终报告（dict）
         "history": [],      # [{"question": {...}, "answer": "..."}]
+        "records_transcript": None,  # 记录页：选中会话的问答记录
+        "records_report": None,      # 记录页：选中会话的报告
+        "records_pick": None,        # 记录页：selectbox 的 key 初值
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -111,8 +115,13 @@ def sidebar() -> None:
             reset()
             st.rerun()
 
+        if st.button("📁 历史会话", width="stretch"):
+            st.session_state["records_transcript"] = None
+            st.session_state["records_report"] = None
+            goto("记录")
+
         st.divider()
-        st.caption("页面：① 开面 → ② 面试 → ③ 报告")
+        st.caption("页面：① 开面 → ② 面试 → ③ 报告 → ④ 记录")
 
 
 # ---------------------------------------------------------------- ① 开面
@@ -231,6 +240,16 @@ def render_report() -> None:
         return
 
     st.header("③ 面试报告")
+    render_report_body(report)
+
+    st.divider()
+    if st.button("再来一场", type="primary", width="stretch"):
+        reset()
+        st.rerun()
+
+
+def render_report_body(report: dict) -> None:
+    """只画报告内容，不带标题和底部按钮——记录页复用同一套渲染，避免两份代码走偏。"""
     summary = report.get("dimension_summary") or {}
     if summary:
         average = sum(summary.values()) / len(summary)
@@ -265,10 +284,99 @@ def render_report() -> None:
     for index, step in enumerate(report.get("next_steps") or [], start=1):
         st.markdown(f"{index}. {step}")
 
-    st.divider()
-    if st.button("再来一场", type="primary", width="stretch"):
-        reset()
-        st.rerun()
+
+# ---------------------------------------------------------------- ④ 记录
+def render_transcript(transcript: dict) -> None:
+    """把 `turns` 画成一问一答；跳过的题、有评分的题分别标注。"""
+    turns = transcript.get("turns") or []
+    if not turns:
+        st.info("这一场还没有问答记录（刚开面、还没答题）。")
+        return
+    for index, turn in enumerate(turns, start=1):
+        question = turn.get("question") or {}
+        dimension = DIMENSION_LABELS.get(question.get("dimension"), question.get("dimension", ""))
+        st.markdown(f"**第 {index} 题** · {dimension} · {DIFFICULTY_LABELS.get(question.get('difficulty'), '')}")
+        st.markdown(f"> {question.get('text', '')}")
+        if turn.get("skipped"):
+            st.caption("（跳过）")
+        else:
+            st.markdown(turn.get("answer") or "（未回答）")
+            score = turn.get("score") or {}
+            if score.get("valid") is not None:
+                mark = "有证据" if score.get("valid") else "无证据"
+                st.caption(f"评分 {score.get('avg', '-')} 分（{mark}）")
+
+
+def render_records() -> None:
+    """④ 历史会话：列表查 `sessions` 表，问答记录读图 state，报告查 `reports` 表。"""
+    st.header("④ 会话记录")
+    st.caption("历史面试都在数据库里；这里只读不写，不会花模型钱。")
+
+    try:
+        records = api_client.list_sessions(limit=50)
+    except Exception as exc:  # noqa: BLE001
+        show_error(exc)
+        return
+
+    if not records:
+        st.info("还没有面试记录。")
+        if st.button("去开一场"):
+            goto("开面")
+        return
+
+    st.dataframe(
+        [
+            {
+                "时间": row.get("created_at", ""),
+                "JD": row.get("jd_title", ""),
+                "状态": STATUS_LABELS.get(row.get("status"), row.get("status", "")),
+                "会话": row.get("session_id", ""),
+            }
+            for row in records
+        ],
+        width="stretch",
+        hide_index=True,
+    )
+
+    labels = {
+        row["session_id"]: f"{row.get('created_at', '')} · {row.get('jd_title', '')} · {STATUS_LABELS.get(row.get('status'), row.get('status'))}"
+        for row in records
+    }
+    if st.session_state.get("records_pick") not in labels:
+        st.session_state["records_pick"] = records[0]["session_id"]
+    chosen = st.selectbox(
+        "选一场查看",
+        options=list(labels),
+        format_func=lambda sid: labels[sid],
+        key="records_pick",
+    )
+    status = next((row.get("status") for row in records if row["session_id"] == chosen), "active")
+
+    col_transcript, col_report = st.columns(2)
+    with col_transcript:
+        if st.button("查看问答记录", width="stretch"):
+            try:
+                st.session_state["records_transcript"] = api_client.load_transcript(chosen)
+            except Exception as exc:  # noqa: BLE001
+                show_error(exc)
+    with col_report:
+        if st.button("查看报告", width="stretch", disabled=status != "finished"):
+            try:
+                st.session_state["records_report"] = api_client.load_report(chosen)
+            except Exception as exc:  # noqa: BLE001
+                show_error(exc)
+    if status != "finished":
+        st.caption("这一场还没结束，报告要等面试跑完才有。")
+
+    transcript = st.session_state.get("records_transcript")
+    if transcript and transcript.get("session_id") == chosen:
+        st.subheader("问答记录")
+        render_transcript(transcript)
+
+    report = st.session_state.get("records_report")
+    if report:
+        st.subheader("报告")
+        render_report_body(report)
 
 
 # ---------------------------------------------------------------- 主流程
@@ -281,6 +389,8 @@ def main() -> None:
         render_start()
     elif page == "面试":
         render_interview()
+    elif page == "记录":
+        render_records()
     else:
         render_report()
 

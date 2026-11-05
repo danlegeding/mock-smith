@@ -65,3 +65,19 @@ def load_report(session_id: str) -> dict[str, Any]:
         resp = client.get(f"/sessions/{session_id}/report")
         resp.raise_for_status()
         return resp.json()
+
+
+def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
+    """最近的历史会话：`[{session_id, jd_title, status, created_at}]`，按时间倒序。"""
+    with _client() as client:
+        resp = client.get("/sessions", params={"limit": limit})
+        resp.raise_for_status()
+        return resp.json()
+
+
+def load_transcript(session_id: str) -> dict[str, Any]:
+    """一场面试的问答记录：`{session_id, status, turns: [{question, answer, score, skipped}]}`。"""
+    with _client() as client:
+        resp = client.get(f"/sessions/{session_id}/transcript")
+        resp.raise_for_status()
+        return resp.json()
