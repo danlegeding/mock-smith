@@ -45,7 +45,8 @@ def main() -> int:
     args = parser.parse_args()
     base = args.base_url.rstrip("/")
 
-    with httpx.Client(base_url=base, timeout=600.0) as client:
+    # trust_env=False：本机回环地址直连，别被环境里的 HTTP_PROXY 拿去回 502
+    with httpx.Client(base_url=base, timeout=600.0, trust_env=False) as client:
         # ---- 1. 探活
         health = client.get("/health")
         check("GET /health", health.status_code == 200 and health.json()["status"] == "ok")

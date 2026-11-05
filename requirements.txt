@@ -21,9 +21,10 @@ psycopg[binary,pool]==3.3.6
 tortoise-orm==1.1.9
 asyncpg==0.32.0
 
-# ---- Web
+# ---- Web：后端接口 + 前端演示
 fastapi==0.162.0
 uvicorn==0.54.0
+streamlit==1.66.1
 
 # ---- 工具（check_*.py 用 httpx，gold 集的 yaml 用 PyYAML）
 PyYAML==6.0.3

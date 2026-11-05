@@ -1,0 +1,12 @@
+# Streamlit 本地运行配置（提交进仓库，保证别人 clone 后行为一致）
+[server]
+port = 8501
+headless = true
+
+[browser]
+# 别把使用统计发出去
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#4F7CFF"

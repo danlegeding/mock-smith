@@ -2,10 +2,10 @@
 __pycache__/
 *.pyc
 .env
-.streamlit/
 *.log
 
 # 参考答案，已 gitignore
 _solutions/
 .idea/
+.streamlit/secrets.toml
 .cache/
