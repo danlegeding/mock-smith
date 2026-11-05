@@ -37,7 +37,12 @@ DIMENSION_LABELS = {
 DIFFICULTY_LABELS = {1: "基础", 2: "中等", 3: "深入"}
 KIND_LABELS = {"opening": "主问题", "followup": "追问", "scenario": "情景题", "deep_dive": "深挖"}
 
-st.set_page_config(page_title="模拟面试 Agent", page_icon="🎤", layout="centered")
+
+# 注意：`st.set_page_config` 必须第一个 st 调用，但**不能写在模块顶层**——
+# `python web/app.py` 直接跑时，模块顶层任何 st.* 都会在托管启动到 Streamlit 运行器之前
+# 吐一行 `missing ScriptRunContext!` 的 WARNING。放到 main() 里既满足"第一个 st 调用"，也干净。
+def configure_page() -> None:
+    st.set_page_config(page_title="模拟面试 Agent", page_icon="🎤", layout="centered")
 
 
 # ---------------------------------------------------------------- 状态管理
@@ -102,7 +107,7 @@ def sidebar() -> None:
         st.write(f"**当前会话**：`{st.session_state['session_id'] or '未开始'}`")
         st.write(f"**已答轮数**：{len(st.session_state['history'])}")
 
-        if st.button("重新开始一场", use_container_width=True):
+        if st.button("重新开始一场", width="stretch"):
             reset()
             st.rerun()
 
@@ -133,7 +138,7 @@ def render_start() -> None:
         resume_file = st.selectbox("简历样本", resume_files, format_func=lambda p: p.name)
         resume_text = st.text_area("简历内容", value=read_text(resume_file), height=260)
 
-    if st.button("开始面试", type="primary", use_container_width=True):
+    if st.button("开始面试", type="primary", width="stretch"):
         with st.spinner("正在解析材料并出题，大约 20~60 秒…"):
             try:
                 turn = api_client.create_session(jd_text, resume_text)
@@ -194,8 +199,8 @@ def render_interview() -> None:
     )
 
     col_submit, col_skip = st.columns([3, 1])
-    submitted = col_submit.button("提交回答", type="primary", use_container_width=True)
-    skipped = col_skip.button("跳过这题", use_container_width=True)
+    submitted = col_submit.button("提交回答", type="primary", width="stretch")
+    skipped = col_skip.button("跳过这题", width="stretch")
 
     if not (submitted or skipped):
         return
@@ -261,13 +266,14 @@ def render_report() -> None:
         st.markdown(f"{index}. {step}")
 
     st.divider()
-    if st.button("再来一场", type="primary", use_container_width=True):
+    if st.button("再来一场", type="primary", width="stretch"):
         reset()
         st.rerun()
 
 
 # ---------------------------------------------------------------- 主流程
 def main() -> None:
+    configure_page()
     init_state()
     sidebar()
     page = st.session_state["page"]
@@ -279,5 +285,68 @@ def main() -> None:
         render_report()
 
 
+# ---------------------------------------------------------------- 启动方式
+def _running_under_streamlit() -> bool:
+    """判断当前脚本是不是被 `streamlit run` 拉起来的。
+
+    在 Streamlit 运行时里，`get_script_run_ctx()` 有值；直接用 `python web/app.py`
+    跑则没有——那种情况下每个 `st.*` 调用都会往终端吐一行
+    `WARNING ... Thread 'MainThread': missing ScriptRunContext!`，刷屏且页面不显示。
+    """
+    try:
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+
+        return get_script_run_ctx() is not None
+    except Exception:  # noqa: BLE001 - 取不到上下文就当没在 Streamlit 里
+        return False
+
+
+def _port_in_use(host: str, port: int) -> bool:
+    """探测端口是否已被监听（和 src/app.py 里同一个做法）。"""
+    import socket
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.3)
+        return sock.connect_ex((host, port)) == 0
+
+
+def _launch_streamlit() -> int:
+    """用 `python web/app.py` 启动时，把控制权交给 Streamlit 自己的运行器。
+
+    这样后端(`python src/app.py`)和前端(`python web/app.py`)启动方式就对称了，
+    也不用手动记 `-m streamlit run` 这串。
+    """
+    import argparse
+    import subprocess
+
+    parser = argparse.ArgumentParser(description="启动模拟面试前端（等价于 streamlit run web/app.py）")
+    parser.add_argument("--server.port", dest="port", type=int, default=8501, help="端口，默认 8501")
+    parser.add_argument("--server.address", dest="address", default="127.0.0.1", help="监听地址，默认 127.0.0.1")
+    args, extra = parser.parse_known_args()
+
+    if _port_in_use(args.address, args.port):
+        print(f"端口 {args.port} 已被占用。八成是上一次的前端没关。任选一种：")
+        print(f"  1) 换端口启动： python web/app.py --server.port {args.port + 1}")
+        print(f"  2) 关掉旧进程： netstat -ano -p TCP | findstr :{args.port}  然后 taskkill /PID <PID> /F")
+        return 1
+
+    command = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(Path(__file__).resolve()),
+        f"--server.address={args.address}",
+        f"--server.port={args.port}",
+        *extra,
+    ]
+    print("启动前端：" + " ".join(command[3:]))
+    print(f"浏览器打开 http://{args.address}:{args.port}")
+    return subprocess.call(command)
+
+
 if __name__ == "__main__":
-    main()
+    if _running_under_streamlit():
+        main()
+    else:
+        raise SystemExit(_launch_streamlit())
