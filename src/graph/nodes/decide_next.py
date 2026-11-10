@@ -31,7 +31,7 @@ from langchain_core.messages import HumanMessage
 
 from src.graph.checks import quote_in_answer, strip_internal_ids
 from src.graph.nodes.parse_inputs import render_prompt
-from src.graph.policy import MAX_TURNS
+from src.graph.policy import MAX_TURNS, active_dimensions
 from src.graph.trace import tool_logger
 from src.llm import get_chat_model
 from src.model import Dimension, DIMENSION_LABELS, Decision, DecideAction
@@ -87,7 +87,7 @@ def decide_next_action(state: dict[str, Any]) -> dict[str, Any]:
                 skipped[key] = skipped.get(key, 0) + 1
         rows = [
             f"{DIMENSION_LABELS[d]}({d.value}) 问{asked.get(d.value, 0)}题 跳过{skipped.get(d.value, 0)}次"
-            for d in Dimension
+            for d in active_dimensions(state.get("resume_profile") or {})
         ]
         return f"已用轮数 {len(turns)}/{MAX_TURNS}\n" + "\n".join(rows)
 
@@ -179,7 +179,7 @@ def decide_next_action(state: dict[str, Any]) -> dict[str, Any]:
         asked_texts = {turn["question"]["text"] for turn in turns}
         uncovered = [
             d.value
-            for d in Dimension
+            for d in active_dimensions(state.get("resume_profile") or {})
             if d.value not in asked_dims
             and any(q["dimension"] == d.value and q["text"] not in asked_texts for q in plan)
         ]

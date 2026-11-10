@@ -15,7 +15,8 @@ from langgraph.types import Command
 
 from src.api import graph_io
 from src.api.deps import get_active_session, get_graph
-from src.model import DIMENSIONS, TurnOut
+from src.graph.policy import active_dimensions
+from src.model import TurnOut
 from src.orm_models import ReportRecord, SessionRecord
 
 router = APIRouter(tags=["面试"])
@@ -38,7 +39,9 @@ async def _save_report_if_finished(session_id: str, values: dict[str, Any]) -> N
     averages: dict[str, float] = report.get("dimension_summary") or {}
     overall_score = round(sum(averages.values()) / len(averages), 2) if averages else 0.0
     asked = {turn["question"]["dimension"] for turn in turns}
-    skipped_dims = [d.value for d in DIMENSIONS if d.value not in asked]
+    skipped_dims = [
+        d.value for d in active_dimensions(values.get("resume_profile") or {}) if d.value not in asked
+    ]
 
     await ReportRecord.create(
         session=session,

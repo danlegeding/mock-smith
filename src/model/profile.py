@@ -8,7 +8,7 @@ from .enums import Seniority
 
 
 class SkillItem(BaseModel):
-    """一项技能要求。id 是用来被问题引用的（Question.evidence_ref）。"""
+    """JD中的一项技能要求。id 是用来被问题引用的（Question.evidence_ref）。"""
 
     id: str = Field(description="稳定 id，如 s1、s2，用于被 Question.evidence_ref 引用")
     name: str = Field(min_length=1, description="技能名，如 Python / LangGraph / pgvector")
@@ -21,7 +21,7 @@ class ProjectItem(BaseModel):
     id: str = Field(description="稳定 id，如 p1、p2")
     name: str = Field(min_length=1, description="项目名，如'知识库问答 Agent'")
     tech_stack: list[str] = Field(default_factory=list, description="用到的技术，如 ['Python','pgvector']")
-    my_role: str = Field(default="", description="候选人具体负责的部分，一句话")
+    my_role: str = Field(max_length=200,default="", description="候选人具体负责的部分，一句话")
     result: str = Field(default="", description="量化结果，如'召回率 0.62 -> 0.81'；没有就留空")
 
 
@@ -47,7 +47,7 @@ class JDProfile(BaseModel):
 class ResumeProfile(BaseModel):
     """一份简历的结构化结果。"""
 
-    projects: list[ProjectItem] = Field(min_length=1, description="项目列表，至少 1 个")
+    projects: list[ProjectItem] = Field(description="项目列表，可以没有")
     skills: list[str] = Field(default_factory=list, description="候选人自己声明掌握的技能")
     experiences: list[ExperienceItem] = Field(default_factory=list, description="实习/竞赛/开源经历")
     education: str = Field(default="", description="学校/专业/年级，一行")
