@@ -50,7 +50,7 @@ class GoldItem(BaseModel):
     scoring_dimension: Dimension = Field(
         description="这道题考哪个维度；必须是 Dimension 的英文值，禁止新造维度"
     )
-    question_difficulty: int = Field(default=2, ge=1, le=3, description="题目难度：1 入门 / 2 常规 / 3 深挖")
+    question_difficulty: int = Field(default=2, ge=1, le=3, description="题目难度：1 入门 / 2 常规 / 3 挑战")
     candidate_answer: str = Field(
         min_length=20, description="候选人回答原文。人工标注时不要润色——评测要的就是真实水平"
     )

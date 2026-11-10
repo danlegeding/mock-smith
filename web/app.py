@@ -35,7 +35,7 @@ DIMENSION_LABELS = {
     "job_match": "岗位匹配",
 }
 DIFFICULTY_LABELS = {1: "基础", 2: "中等", 3: "深入"}
-KIND_LABELS = {"opening": "主问题", "followup": "追问", "scenario": "情景题", "deep_dive": "深挖"}
+KIND_LABELS = {"opening": "主问题", "followup": "追问", "scenario": "情景题"}
 STATUS_LABELS = {"active": "进行中", "finished": "已结束", "abandoned": "已放弃"}
 
 

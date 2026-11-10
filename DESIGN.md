@@ -123,7 +123,7 @@
 | `difficulty` | 1 / 2 / 3 |
 | `evidence_ref` | **必填**：问题依据的 JD 技能或简历条目 id |
 | `anchor_quote` | 追问时必填：上轮回答中被追问的原话片段 |
-| `kind` | enum: opening / followup / scenario / deep_dive |
+| `kind` | enum: opening / followup / scenario（"深挖"由决策层 `DecideAction.DEEPEN` 表达，不是题的类型） |
 
 ### `AnswerScore`
 | 字段 | 说明 |

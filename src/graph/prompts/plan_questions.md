@@ -27,7 +27,7 @@
 6. **项目真实性**的题必须引用简历里的某个项目（p1…），问"你到底做了什么、遇到什么困难"，
    不要问"你会不会某技术"。
 7. **工程思维**的题优先从 JD 的 `responsibilities` 里拿场景，做成情景题，`kind` 用 `scenario`。
-8. `kind` 只允许 `opening` / `scenario` / `deep_dive`；**不要生成 `followup`**
+8. `kind` 只允许 `opening` / `scenario`；**不要生成 `followup`**
    （追问要等候选人答完、看到原话才生成，提前出追问必然是瞎问）。
 9. 同一项技能最多出 2 道题，不要 10 道题全问 Python。
 10. **合规**：不许问年龄、婚育、籍贯、家庭、健康、政治倾向这类与岗位无关的问题。
@@ -46,7 +46,7 @@
       "dimension": "tech_depth | project_authenticity | engineering_thinking | communication | job_match",
       "difficulty": 1,
       "evidence_ref": "s1",
-      "kind": "opening | scenario | deep_dive"
+      "kind": "opening | scenario"
     }
   ]
 }

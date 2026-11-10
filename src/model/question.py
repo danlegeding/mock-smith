@@ -20,7 +20,7 @@ class Question(BaseModel):
     )
     kind: QuestionKind = Field(
         default=QuestionKind.OPENING,
-        description="opening 主问题 / followup 追问 / scenario 情景题 / deep_dive 深挖",
+        description="opening 主问题 / followup 追问（必须带 anchor_quote）/ scenario 情景题",
     )
 
     @model_validator(mode="after")

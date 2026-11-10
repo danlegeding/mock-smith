@@ -43,12 +43,15 @@ class Dimension(str, Enum):
 
 
 class QuestionKind(str, Enum):
-    """问题类型。"""
+    """问题类型。注意这里只描述「题从哪来」，不描述「问得深不深」。
 
-    OPENING = "opening"  # 主问题
+    「深挖」是决策（DecideAction.DEEPEN），不是题的类型：决定深挖时唯一出路就是
+    即时生成一个 kind=followup、带 anchor_quote 的题，所以不需要第二个枚举值。
+    """
+
+    OPENING = "opening"  # 主问题（来自题池）
     FOLLOWUP = "followup"  # 基于上一轮回答的追问（必须引原话）
     SCENARIO = "scenario"  # 情景题
-    DEEP_DIVE = "deep_dive"  # 深挖同一维度
 
 
 class DecideAction(str, Enum):
