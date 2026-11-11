@@ -31,7 +31,7 @@ from langchain_core.messages import HumanMessage
 from src.graph.checks import quote_in_answer, verify_quote_detail
 from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.rubrics import rubric_text
-from src.graph.trace import tool_logger
+from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
 from src.model import AnswerScore, Dimension, DimensionScore, DIMENSION_LABELS
 
@@ -112,7 +112,7 @@ def evaluate_answer(state: dict[str, Any]) -> dict[str, Any]:
     )
     result = agent.invoke(
         {"messages": [HumanMessage(content=_render_user_message(question, answer, state.get("jd_profile", {})))]},
-        config={"callbacks": [lg] if (lg := tool_logger()) else []},
+        config={"callbacks": tool_callbacks()},
     )
     score: AnswerScore | None = result.get("structured_response")
 

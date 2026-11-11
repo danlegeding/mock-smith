@@ -32,7 +32,7 @@ from langchain_core.messages import HumanMessage
 from src.graph.checks import quote_in_answer, strip_internal_ids
 from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.policy import MAX_TURNS, active_dimensions
-from src.graph.trace import tool_logger
+from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
 from src.model import Dimension, DIMENSION_LABELS, Decision, DecideAction
 
@@ -156,7 +156,7 @@ def decide_next_action(state: dict[str, Any]) -> dict[str, Any]:
     )
     result = agent.invoke(
         {"messages": [HumanMessage(content=user)]},
-        config={"callbacks": [lg] if (lg := tool_logger()) else []},
+        config={"callbacks": tool_callbacks()},
     )
     decision: Decision | None = result.get("structured_response")
 

@@ -30,6 +30,9 @@ def ask_question(state: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict: {"turns": [...], "current_question": None}，即新增一轮问答并清空当前题。
     """
+    # current_question 来自 question_plan，那一层已经是 model_dump 过的 dict
+    # （plan_questions.py:170），所以这里必须还原成模型：要 question.dimension 的枚举、
+    # 要 question.model_dump() 给 interrupt。-- 不是多余的转换。
     question = Question.model_validate(state["current_question"])
 
     # 这里的返回值只在本节点内有用，但它会在 resume 时被"重放"——

@@ -42,3 +42,32 @@
   走 langchain 的 `ChatOpenAI` 不会。`temperature=0` 在它上面可用。
 - `POSTGRES_PASSWORD` 只在数据库空卷首次创建时生效；改密码必须 `docker compose down -v`。
 - `DATABASE_URL` 里的密码含 `@` 时必须写成 `%40`。
+
+## P4 · 设计决策：为什么 `match_gap` 用代码判档，而不是交给 LLM
+
+**讨论起点**：strong/weak/missing 本质是语义匹配，`match_gap.py` 里一半代码在模拟语义
+（别名表、技能名归一化、原文回找），看起来像"该给模型干的活"。这个质疑是对的。
+
+**为什么仍然用代码**（三条代价，按硬度排）：
+
+1. **证据必须逐字原文**：代码版能从简历里切出原文片段作为 `evidence_quote`；LLM 会转述。
+   下游 `Question.evidence_ref`、报告引文核对、gold 标注全依赖逐字引用。
+   （已有教训：模型把 `MySQL基础` 写成 `MySQL`，见 P1/b17。）
+2. **可复现性**：判档结果决定出题策略，进而决定整场面试走向。代码是纯函数，
+   `check_gap.py` 15 条断言稳定；LLM 即使 `temperature=0` 也会抖，测试变 flaky（见 P2）。
+3. **成本与延迟**：`match_gap` 每场跑一次。代码 ~0ms；LLM 一次 1–3s + token + 重试。
+
+**如果以后要改成 LLM，正确姿势是分工而不是替换**：
+
+```
+LLM  ：只输出 [(skill, level)]          ← 判档交给模型
+代码 ：① skill 必须在 JD 列表里
+       ② 按 level 到简历原文回找逐字证据（找不到就降级 / 记无效）
+```
+
+这与 `evaluate_answer` 的做法一致：模型给判断，`verify_quote` 逐字核对，
+`_keep_quoted` 丢弃编造条目。**语义判断归模型，可验证性归代码。**
+
+**已知代价**：别名表（`_lookup_related_terms`）靠手工维护，新 JD 出现新叫法时会漏判。
+更省事的折中是「离线用 LLM 生成别名表 → 落成静态数据 → 运行时仍走代码」，
+确定性与语义能力兼得，只牺牲新技能的时效。

@@ -36,3 +36,15 @@ def tool_logger(prefix: str = "") -> ToolCallLogger | None:
     if os.getenv("GRAPH_TRACE", "1") == "0":
         return None
     return ToolCallLogger(prefix)
+
+
+def tool_callbacks(prefix: str = "") -> list[BaseCallbackHandler]:
+    """给 invoke(config={"callbacks": ...}) 用的回调列表。
+
+    有打印器就返回 [打印器]，静音时返回空列表——
+    这样调用方不用写 `[x] if (x := tool_logger()) else []` 这种表达式。
+    """
+    logger = tool_logger(prefix)
+    if logger is None:
+        return []
+    return [logger]

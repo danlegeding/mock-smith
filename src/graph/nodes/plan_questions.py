@@ -134,10 +134,10 @@ def plan_questions(state: dict[str, Any]) -> dict[str, Any]:
     gaps = state.get("gap_map", [])
 
     refs = _build_evidence_ref_table(jd_profile, resume_profile)
-    system = render_prompt("plan_questions.md")
-    user_content = _render_user_message(jd_profile, resume_profile, gaps, refs)
+    system_prompt = render_prompt("plan_questions.md")
+    user_message = _render_user_message(jd_profile, resume_profile, gaps, refs)
 
-    plan = call_json(QuestionPlan, system=system, user=user_content, temperature=0.5)
+    plan = call_json(QuestionPlan, system=system_prompt, user=user_message, temperature=0.5)
     seen: set[str] = set()
     # 第一轮也按"本次要考的维度"过滤：提示词里写了"只能从给定维度里选"，实测模型仍会
     # 自己补一个 project_authenticity（没有项目也照问"你做过什么小工具"）——同样靠代码兜底。
@@ -155,7 +155,7 @@ def plan_questions(state: dict[str, Any]) -> dict[str, Any]:
         names = "、".join(f"{DIMENSION_LABELS[d]}({d.value})" for d in missing)
         print(f"[plan_questions] 题池漏了维度：{names} → 补一轮")
         extra_user = (
-            f"{user_content}\n\n## 额外要求（第二轮补题）\n"
+            f"{user_message}\n\n## 额外要求（第二轮补题）\n"
             f"第一轮漏掉了这些维度：{names}。\n"
             f"请**只**针对这些维度出题，每个维度 1-2 道，其余维度不要出。"
         )
