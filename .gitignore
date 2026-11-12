@@ -9,3 +9,5 @@ _solutions/
 .idea/
 .streamlit/secrets.toml
 .cache/
+
+drafts/
