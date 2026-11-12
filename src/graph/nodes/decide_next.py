@@ -32,12 +32,13 @@ from langchain_core.messages import HumanMessage
 from src.graph.checks import quote_in_answer, strip_internal_ids
 from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.policy import MAX_TURNS, active_dimensions
+from src.graph.state import InterviewState, QuestionDict, TurnDict
 from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
 from src.model import Dimension, DIMENSION_LABELS, Decision, DecideAction
 
 
-def _format_turn_history(turns: list[dict[str, Any]]) -> str:
+def _format_turn_history(turns: list[TurnDict]) -> str:
     """把已问的轮次压成几行文本，给决策 agent 看。"""
     lines: list[str] = []
     for i, turn in enumerate(turns, 1):
@@ -60,7 +61,7 @@ def _format_turn_history(turns: list[dict[str, Any]]) -> str:
     return "\n".join(lines) or "（还没有问答）"
 
 
-def decide_next_action(state: dict[str, Any]) -> dict[str, Any]:
+def decide_next_action(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：产出 decision（下一步动作 + 理由），并决定下一题是不是追问。"""
     turns = list(state.get("turns") or [])
     plan = list(state.get("question_plan") or [])
@@ -191,7 +192,7 @@ def decide_next_action(state: dict[str, Any]) -> dict[str, Any]:
                 reason=f"还没覆盖到的维度：{names}，覆盖不全不能结束 → 先补覆盖率",
             )
 
-    current_question: dict[str, Any] | None = None
+    current_question: QuestionDict | None = None
     next_difficulty: int | None = None
 
     if decision.action == DecideAction.DEEPEN and decision.followup is not None:

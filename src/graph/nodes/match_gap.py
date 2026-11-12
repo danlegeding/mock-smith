@@ -43,6 +43,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from src.graph.state import InterviewState, JDProfileDict, ResumeProfileDict
 from src.model import GapItem, MatchLevel
 
 # ---------------------------------------------------------------- 人工知识表
@@ -76,7 +77,7 @@ def _normalize_skill_name(name: str) -> str:
     return name.strip().lower().replace(" ", "").replace("-", "")
 
 
-def _build_resume_skill_index(resume_profile: dict[str, Any]) -> dict[str, str]:
+def _build_resume_skill_index(resume_profile: ResumeProfileDict) -> dict[str, str]:
     """把简历里提到的技术收成一张查询表：{统一后的名字: 简历原文里的写法}。
 
     例：简历写 "MySQL 基础"，表里就是 {"mysql": "MySQL 基础"}。
@@ -169,8 +170,8 @@ def _weight_to_priority(weight: int, *, is_must: bool) -> int:
 
 
 def build_gap_map(
-    jd_profile: dict[str, Any],
-    resume_profile: dict[str, Any],
+    jd_profile: JDProfileDict,
+    resume_profile: ResumeProfileDict,
     resume_text: str = "",
 ) -> list[GapItem]:
     """把 JD 的必修项、加分项逐条跑一遍，拼出完整的缺口清单。
@@ -202,7 +203,7 @@ def build_gap_map(
     return sorted(gaps.values(), key=lambda gap: gap.priority, reverse=True)
 
 
-def match_gap(state: dict[str, Any]) -> dict[str, Any]:
+def match_gap(state: InterviewState) -> dict[str, Any]:
     """LangGraph 的节点函数：进一个字典，出一个字典，里面只放"要更新的字段"。
 
     为什么最后要 model_dump()：这些数据要存进数据库（checkpointer），

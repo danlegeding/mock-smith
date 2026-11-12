@@ -17,9 +17,10 @@ from collections import Counter
 from typing import Any
 
 from src.graph.policy import MAX_QUESTIONS_PER_DIM, MAX_SKIPS_PER_DIM, MAX_TURNS
+from src.graph.state import InterviewState, QuestionDict, TurnDict
 
 
-def _count_turns_by_dimension(turns: list[dict[str, Any]]) -> tuple[Counter, Counter]:
+def _count_turns_by_dimension(turns: list[TurnDict]) -> tuple[Counter, Counter]:
     """按维度统计：问了几次（Asked）、跳过几次（Skipped）。
 
     Args:
@@ -39,10 +40,10 @@ def _count_turns_by_dimension(turns: list[dict[str, Any]]) -> tuple[Counter, Cou
 
 
 def _pick_question(
-    plan: list[dict[str, Any]],
-    turns: list[dict[str, Any]],
+    plan: list[QuestionDict],
+    turns: list[TurnDict],
     hint: int | None = None,
-) -> dict[str, Any] | None:
+) -> QuestionDict | None:
     """从题池里挑下一题；没有可问的返回 None（表示该结束了）。
 
     Args:
@@ -59,7 +60,7 @@ def _pick_question(
     asked, skipped = _count_turns_by_dimension(turns)
     asked_texts = {turn["question"]["text"] for turn in turns}
 
-    candidates: list[dict[str, Any]] = []
+    candidates: list[QuestionDict] = []
     for question in plan:
         dimension = question["dimension"]
         if question["text"] in asked_texts:
@@ -83,7 +84,7 @@ def _pick_question(
     return candidates[0]
 
 
-def select_question(state: dict[str, Any]) -> dict[str, Any]:
+def select_question(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：挑出下一题放进 current_question。
 
     - 有题可问 → {"current_question": {...}}

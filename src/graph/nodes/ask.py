@@ -18,10 +18,11 @@ from typing import Any
 
 from langgraph.types import interrupt
 
+from src.graph.state import InterviewState
 from src.model import Question, Turn
 
 
-def ask_question(state: dict[str, Any]) -> dict[str, Any]:
+def ask_question(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：提问 → 暂停等回答 → 把这一轮记录进 turns。
 
     Args:

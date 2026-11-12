@@ -33,13 +33,14 @@ from typing import Any
 from src.graph.checks import strip_internal_ids
 from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.policy import active_dimensions
+from src.graph.state import GapItemDict, InterviewState, JDProfileDict, ResumeProfileDict
 from src.llm import call_json
 from src.model import DIMENSION_LABELS, Question, QuestionPlan
 
 PLAN_SIZE = 10
 
 
-def _build_evidence_ref_table(jd_profile: dict[str, Any], resume_profile: dict[str, Any]) -> dict[str, str]:
+def _build_evidence_ref_table(jd_profile: JDProfileDict, resume_profile: ResumeProfileDict) -> dict[str, str]:
     """列出"允许被引用的 id"：JD 的 s1/s2…、简历的 p1/p2…、e1/e2…
 
     evidence_ref 只能从这里选。这是最简单有效的一道护栏：模型编不出不存在的 id。
@@ -56,9 +57,9 @@ def _build_evidence_ref_table(jd_profile: dict[str, Any], resume_profile: dict[s
 
 
 def _render_user_message(
-    jd_profile: dict[str, Any],
-    resume_profile: dict[str, Any],
-    gaps: list[dict[str, Any]],
+    jd_profile: JDProfileDict,
+    resume_profile: ResumeProfileDict,
+    gaps: list[GapItemDict],
     refs: dict[str, str],
 ) -> str:
     """把出题需要的材料拼成一段给模型看的文本（纯文本比 JSON 稳，模型读表格更准）。"""
@@ -127,7 +128,7 @@ def _filter_valid_questions(
     return kept
 
 
-def plan_questions(state: dict[str, Any]) -> dict[str, Any]:
+def plan_questions(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：出题池，返回 {"question_plan": [...]}。"""
     jd_profile = state["jd_profile"]
     resume_profile = state["resume_profile"]

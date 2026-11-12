@@ -13,6 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from src.graph.state import InterviewState
 from src.llm import call_json
 from src.model import JDProfile, ResumeProfile
 
@@ -72,7 +73,7 @@ def extract_resume_profile(resume_text: str) -> ResumeProfile:
     )
 
 
-def parse_inputs(state: dict[str, Any]) -> dict[str, Any]:
+def parse_inputs(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：把 state 里的 JD / 简历原文解析成两个 profile。
 
     只返回"要更新的字段"，不用把整个 state 还回去 —— LangGraph 会自己合并。

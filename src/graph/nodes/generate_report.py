@@ -21,13 +21,14 @@ from typing import Any
 
 from src.graph.checks import normalize, quote_in_answer
 from src.graph.nodes.parse_inputs import render_prompt
+from src.graph.state import GapItemDict, InterviewState, TurnDict
 from src.llm import call_json
 from src.model import DIMENSION_LABELS, Dimension, Report, ReportDraft
 
 MAX_ITEMS = 3  # 亮点 / 弱项各最多 3 条
 
 
-def _dimension_averages(turns: list[dict[str, Any]]) -> dict[str, float]:
+def _dimension_averages(turns: list[TurnDict]) -> dict[str, float]:
     """按维度算均分（只统计评过分的轮次，跳过和未评不计入）。"""
     buckets: dict[str, list[int]] = {}
     for turn in turns:
@@ -59,7 +60,7 @@ def _with_verdict(verdict: str, text: str) -> str:
     return f"{verdict}：{body}"
 
 
-def _answered_texts(turns: list[dict[str, Any]]) -> list[str]:
+def _answered_texts(turns: list[TurnDict]) -> list[str]:
     """所有非跳过轮次的回答原文，供引文核对用。"""
     return [turn["answer"] for turn in turns if not turn.get("skipped") and turn.get("answer")]
 
@@ -76,7 +77,7 @@ def _keep_quoted(items: list[Any], answers: list[str]) -> list[Any]:
     return kept[:MAX_ITEMS]
 
 
-def _render_gap_table(gap_map: list[dict[str, Any]]) -> str:
+def _render_gap_table(gap_map: list[GapItemDict]) -> str:
     """缺口表压成几行，让模型知道"岗位要什么、候选人缺什么"。"""
     if not gap_map:
         return "（没有缺口分析结果）"
@@ -92,7 +93,7 @@ def _render_gap_table(gap_map: list[dict[str, Any]]) -> str:
     return "\n".join(rows) or "（缺口表里没有 weak/missing 项）"
 
 
-def _render_history(turns: list[dict[str, Any]]) -> str:
+def _render_history(turns: list[TurnDict]) -> str:
     """问答记录，模型写报告的唯一素材。"""
     lines: list[str] = []
     for i, turn in enumerate(turns, 1):
@@ -115,7 +116,7 @@ def _render_averages(averages: dict[str, float]) -> str:
     return "\n".join(f"- {DIMENSION_LABELS[Dimension(key)]}: {score}" for key, score in averages.items())
 
 
-def generate_report(state: dict[str, Any]) -> dict[str, Any]:
+def generate_report(state: InterviewState) -> dict[str, Any]:
     """LangGraph 节点函数：把整场面试收成一份 Report，写进 state.report。"""
     if state.get("report"):
         return {}  # 已经生成过，续跑时不要重写
@@ -175,7 +176,7 @@ def generate_report(state: dict[str, Any]) -> dict[str, Any]:
     return {"report": report.model_dump(mode="json")}
 
 
-def _fallback_gap_conclusion(gap_map: list[dict[str, Any]]) -> str:
+def _fallback_gap_conclusion(gap_map: list[GapItemDict]) -> str:
     """模型没给缺口结论时，用缺口表兜一句，避免整份报告缺这块。"""
     missing = [gap["skill"] for gap in gap_map if gap.get("match_level") == "missing"]
     weak = [gap["skill"] for gap in gap_map if gap.get("match_level") == "weak"]
