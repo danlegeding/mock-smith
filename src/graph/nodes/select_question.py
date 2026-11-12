@@ -90,8 +90,10 @@ def select_question(state: InterviewState) -> dict[str, Any]:
     - 有题可问 → {"current_question": {...}}
     - 问完了 → {"current_question": None}（路由函数据此走向 END）
     """
-    plan = state.get("question_plan", [])
-    turns = list(state.get("turns") or [])
+    # 这个节点只读 state：挑题、计数都不改 plan / turns 里的内容，
+    # 所以直接拿原列表，不复制（要 append / 替换元素的节点才需要 list() 复制一份）。
+    plan = state.get("question_plan") or []
+    turns = state.get("turns") or []
     question = _pick_question(plan, turns, state.get("next_difficulty"))
     # next_difficulty 是一次性提示：用掉就清空，否则会一直影响后面所有选题
     return {"current_question": question, "next_difficulty": None}
