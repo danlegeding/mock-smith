@@ -138,8 +138,9 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
         print(f"  [evaluate] 引文复检未通过，丢弃维度 {drop}（模型声称核对过，但原文里没有）")
 
     checked = AnswerScore(dimension_scores=scores, signals=score.signals)
-    turn["score"] = checked.model_dump(mode="json")
-    turns[-1] = turn
+    # 拼一个新 dict 再替换，而不是 turn["score"] = ...：
+    # turns 是浅拷贝，元素 dict 与 state 里是同一个对象，原地改会串改 state。
+    turns[-1] = {**turn, "score": checked.model_dump(mode="json")}
 
     if not scores:
         print(f"  [evaluate] {DIMENSION_LABELS[dimension]}: 无有效评分（证据核验失败）")
