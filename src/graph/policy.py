@@ -19,6 +19,18 @@ MAX_QUESTIONS_PER_DIM = 2
 MAX_SKIPS_PER_DIM = 2
 
 
+def counted_turns(turns: list[dict]) -> int:
+    """计入 MAX_TURNS 的轮数：被跳过的那一轮不算。
+
+    口径见上面 MAX_TURNS 的注释（「不含被跳过的」）：跳过不产生评分，也不该
+    占掉一次提问名额——否则连答两句"不会"，面试就提前结束了。
+
+    为什么抽成函数：select_question 和 decide_next 各要算一次。以前一处直接
+    `len(turns)`，导致「挑题节点说还能问、决策节点说已到顶」两个节点口径不一致。
+    """
+    return sum(1 for turn in turns if not turn.get("skipped"))
+
+
 def active_dimensions(resume_profile: dict) -> list[Dimension]:
     """这次面试该考哪些维度——由简历决定，不是常量。
 

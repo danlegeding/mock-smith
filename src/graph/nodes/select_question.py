@@ -4,7 +4,7 @@
 规则能说清、能测、能离线复现；交给模型反而每次行为不一样，面试里没法解释。
 
 规则（按优先级）：
-1. 轮数到 MAX_TURNS → 不问了，结束
+1. 本轮数到 MAX_TURNS → 不问了，结束（跳过的不计入轮数）
 2. 这一题已经问过（按题干去重）→ 跳过
 3. 这个维度已经问够 MAX_QUESTIONS_PER_DIM 道 → 跳过
 4. 这个维度被跳过 MAX_SKIPS_PER_DIM 次 → 跳过（别继续为难人）
@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-from src.graph.policy import MAX_QUESTIONS_PER_DIM, MAX_SKIPS_PER_DIM, MAX_TURNS
+from src.graph.policy import MAX_QUESTIONS_PER_DIM, MAX_SKIPS_PER_DIM, MAX_TURNS, counted_turns
 from src.graph.state import InterviewState, QuestionDict, TurnDict
 
 
@@ -54,7 +54,7 @@ def _pick_question(
     Returns:
         dict | None: 选中的题目 dict；无可问题目时返回 None。
     """
-    if len(turns) >= MAX_TURNS:
+    if counted_turns(turns) >= MAX_TURNS:
         return None
 
     asked, skipped = _count_turns_by_dimension(turns)

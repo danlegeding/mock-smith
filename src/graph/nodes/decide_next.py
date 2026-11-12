@@ -14,7 +14,7 @@ agent 自己组合这些信息决定动作，并给出理由。它可以在"技�
 
 ## 代码仍然握着的四条硬线（agent 不得越过）
 
-1. 轮数到 `MAX_TURNS` 必须结束（不看 agent 意见）
+1. 轮数到 `MAX_TURNS` 必须结束（不看 agent 意见）；跳过的不计入轮数
 2. `deepen` 的 anchor_quote 必须逐字出现在上一轮回答里，否则降级成普通提问
 3. 动作非法/拿不到结构化结果 → 退回 `next`（按题池顺序走），不让流程崩
 4. 还有维度一次都没问过时不许 `end`（覆盖度由代码算，不信 agent 的「都齐了」）
@@ -31,7 +31,7 @@ from langchain_core.messages import HumanMessage
 
 from src.graph.checks import quote_in_answer, strip_internal_ids
 from src.graph.nodes.parse_inputs import render_prompt
-from src.graph.policy import MAX_TURNS, active_dimensions
+from src.graph.policy import MAX_TURNS, active_dimensions, counted_turns
 from src.graph.state import InterviewState, QuestionDict, TurnDict
 from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
@@ -90,7 +90,11 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
             f"{DIMENSION_LABELS[d]}({d.value}) 问{asked.get(d.value, 0)}题 跳过{skipped.get(d.value, 0)}次"
             for d in active_dimensions(state.get("resume_profile") or {})
         ]
-        return f"已用轮数 {len(turns)}/{MAX_TURNS}\n" + "\n".join(rows)
+        skipped_total = sum(1 for turn in turns if turn.get("skipped"))
+        head = f"已用轮数 {counted_turns(turns)}/{MAX_TURNS}"
+        if skipped_total:
+            head += f"（另有 {skipped_total} 题跳过，不计入轮数）"
+        return head + "\n" + "\n".join(rows)
 
     def remaining_questions() -> str:
         """列出题池里还剩哪些题（尚未问过的），最多返回 8 条。
@@ -144,10 +148,11 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
         system_prompt=render_prompt("decide_next.md"),
         response_format=Decision,
     )
+    used = counted_turns(turns)
     user = "\n".join(
         [
             f"岗位：{jd.get('role_title', '?')}（{jd.get('seniority', '?')}）",
-            f"已用轮数：{len(turns)}/{MAX_TURNS}",
+            f"已用轮数：{used}/{MAX_TURNS}（跳过的不计入）",
             "",
             "## 已问答记录",
             _format_turn_history(turns),
@@ -165,8 +170,8 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
         decision = Decision(action=DecideAction.NEXT, reason="没拿到结构化决策，按题池顺序继续")
         print("  [decide] 没拿到结构化决策 → 退回 next")
 
-    # 硬线 1：轮数到顶，必须结束（agent 说什么都不算）
-    if len(turns) >= MAX_TURNS and decision.action != DecideAction.END:
+    # 硬线 1：轮数到顶，必须结束（agent 说什么都不算）。跳过的不计轮数。
+    if used >= MAX_TURNS and decision.action != DecideAction.END:
         decision = Decision(
             action=DecideAction.END,
             reason=f"已问满 {MAX_TURNS} 轮，强制结束（agent 原本想 {decision.action.value}）",
@@ -175,7 +180,7 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
     # 硬线 4：还有维度一次没问过就不许结束（轮数满了除外）。
     # d7-agent-3 实测：沟通表达 0 题，agent 给了 end，理由还写成「各维度齐全」——
     # 模型会给出听起来合理、事实错误的理由，所以覆盖度必须由代码算，不能信它的说法。
-    if decision.action == DecideAction.END and len(turns) < MAX_TURNS:
+    if decision.action == DecideAction.END and used < MAX_TURNS:
         asked_dims = {turn["question"]["dimension"] for turn in turns}
         asked_texts = {turn["question"]["text"] for turn in turns}
         uncovered = [
