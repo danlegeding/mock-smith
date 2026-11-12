@@ -1,4 +1,4 @@
-﻿"""GET /sessions/{session_id}/transcript —— 拿一场面试的问答记录。
+"""GET /sessions/{session_id}/transcript —— 拿一场面试的问答记录。
 
 为什么需要它：`reports` 表只存了结论，用户想回看「当时问了什么、我答了什么」就得读图的
 state。checkpointer 里每次 checkpoint 都留着完整 state，这里只是把 `turns` 摆出来，
