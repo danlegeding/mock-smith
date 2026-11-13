@@ -14,7 +14,7 @@
 ## 代码仍然负责的部分（别指望模型兜底）
 
 1. 跳过的题不评分（省钱、也符合语义）
-2. 只保留当前维度的分数（模型偶尔会顺手评一堆维度）
+2. 只保留当前维度的分数（`get` 取当前维度，其余不读）
 3. 出节点后用同一套规则**再核一遍**引文：模型说"核对过"不算数
 4. 拿不到结构化结果时，记一个"无证据 1 分"，不让流程崩
 
@@ -125,27 +125,25 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
             }
         )
 
-    # 归一化：只留当前维度，防止模型顺手评了别的维度
-    scores = {d: s for d, s in score.dimension_scores.items() if d == dimension}
+    # 一场只认一个维度：只取当前维度的评分，其余不管
+    item = score.dimension_scores.get(dimension)
 
     # 确定性复检：模型说核对过不算数，这里按同一套规则再核一遍
-    drop: list[str] = []
-    for d, item in list(scores.items()):
-        if item.evidence_quote and not quote_in_answer(item.evidence_quote, answer):
-            drop.append(d.value)
-            scores.pop(d)
-    if drop:
-        print(f"  [evaluate] 引文复检未通过，丢弃维度 {drop}（模型声称核对过，但原文里没有）")
+    if item is not None and item.evidence_quote and not quote_in_answer(item.evidence_quote, answer):
+        print(f"  [evaluate] 引文复检未通过，丢弃维度 {dimension.value}（模型声称核对过，但原文里没有）")
+        item = None
 
-    checked = AnswerScore(dimension_scores=scores, signals=score.signals)
+    checked = AnswerScore(
+        dimension_scores={} if item is None else {dimension: item},
+        signals=score.signals,
+    )
     # 拼一个新 dict 再替换，而不是 turn["score"] = ...：
     # turns 是浅拷贝，元素 dict 与 state 里是同一个对象，原地改会串改 state。
     turns[-1] = {**turn, "score": checked.model_dump(mode="json")}
 
-    if not scores:
+    if item is None:
         print(f"  [evaluate] {DIMENSION_LABELS[dimension]}: 无有效评分（证据核验失败）")
     else:
-        item = next(iter(scores.values()))
         mark = "有效" if checked.valid else "无证据"
         print(
             f"  [evaluate] {DIMENSION_LABELS[dimension]}: {item.score} 分（{mark}）"
