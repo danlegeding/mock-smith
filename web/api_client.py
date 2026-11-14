@@ -76,7 +76,10 @@ def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
 
 
 def load_transcript(session_id: str) -> dict[str, Any]:
-    """一场面试的问答记录：`{session_id, status, turns: [{question, answer, score, skipped}]}`。"""
+    """一场面试的问答记录：`{session_id, status, turns: [...], pending_question}`。
+
+    `pending_question` 是还没回答的那道题（已结束时为 None）——「继续这场面试」靠它恢复面试页。
+    """
     with _client() as client:
         resp = client.get(f"/sessions/{session_id}/transcript")
         resp.raise_for_status()

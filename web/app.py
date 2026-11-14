@@ -58,6 +58,7 @@ def init_state() -> None:
         "records_transcript": None,  # 记录页：选中会话的问答记录
         "records_report": None,      # 记录页：选中会话的报告
         "records_pick": None,        # 记录页：selectbox 的 key 初值
+        "page_before_records": "开面",  # 记录页「返回」要回到的那一屏
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -118,6 +119,9 @@ def sidebar() -> None:
         if st.button("📁 历史会话", width="stretch"):
             st.session_state["records_transcript"] = None
             st.session_state["records_report"] = None
+            # 记下从哪一屏过来的，记录页的「返回」才知道回哪里（面试/报告/开面）
+            current = st.session_state["page"]
+            st.session_state["page_before_records"] = current if current in ("面试", "报告") else "开面"
             goto("记录")
 
         st.divider()
@@ -307,9 +311,41 @@ def render_transcript(transcript: dict) -> None:
                 st.caption(f"评分 {score.get('avg', '-')} 分（{mark}）")
 
 
+def _resume_state(session_id: str, transcript: dict) -> dict | None:
+    """把「记录页拿到的 transcript」还原成面试页需要的 state。
+
+    返回 None 表示这一场没有未回答的题（已结束或已出报告），没法继续。
+    为什么只靠 transcript 就够：图的 state 一直在 checkpointer 里，
+    端点已经把它摊成 `turns` + `pending_question`；前端不需要再问「下一题是什么」。
+    """
+    pending = transcript.get("pending_question")
+    if not pending:
+        return None
+    history = [
+        {
+            "question": turn.get("question") or {},
+            "answer": "" if turn.get("skipped") else (turn.get("answer") or ""),
+        }
+        for turn in (transcript.get("turns") or [])
+    ]
+    return {
+        "session_id": session_id,
+        "history": history,
+        "turn": {
+            "session_id": session_id,
+            "type": "question",
+            "question": pending,
+            "turn_index": len(history),
+        },
+        "report": None,
+    }
+
+
 def render_records() -> None:
     """④ 历史会话：列表查 `sessions` 表，问答记录读图 state，报告查 `reports` 表。"""
     st.header("④ 会话记录")
+    if st.button("← 返回", width="content"):
+        goto(st.session_state.get("page_before_records") or "开面")
     st.caption("历史面试都在数据库里；这里只读不写，不会花模型钱。")
 
     try:
@@ -351,6 +387,21 @@ def render_records() -> None:
         key="records_pick",
     )
     status = next((row.get("status") for row in records if row["session_id"] == chosen), "active")
+
+    if status == "active":
+        if st.button("继续这场面试（按 checkpoint 恢复）", type="primary", width="stretch"):
+            try:
+                full = api_client.load_transcript(chosen)
+            except Exception as exc:  # noqa: BLE001
+                show_error(exc)
+            else:
+                restored = _resume_state(chosen, full)
+                if restored is None:
+                    st.warning("这一场没有未回答的题（可能已经出报告了），用「查看报告」看结论。")
+                else:
+                    for key, value in restored.items():
+                        st.session_state[key] = value
+                    goto("面试")
 
     col_transcript, col_report = st.columns(2)
     with col_transcript:

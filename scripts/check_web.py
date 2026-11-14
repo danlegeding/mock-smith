@@ -91,6 +91,26 @@ def main() -> int:
     records = render_screen(page="记录", records_transcript=None, records_report=None, records_pick=None)
     check("④ 记录页执行无异常", not records.exception)
     check("记录页标题已渲染", any(h.value == "④ 会话记录" for h in records.header))
+    check("记录页有返回键", any(b.label == "← 返回" for b in records.button))
+
+    # 续面还原是纯函数，不用起后端就能测
+    import app as web_app  # noqa: E402 - web/ 已在 sys.path 里
+
+    sample_question = {"text": "你负责哪几块？", "dimension": "tech_depth", "difficulty": 2}
+    restored = web_app._resume_state(
+        "s1",
+        {
+            "pending_question": sample_question,
+            "turns": [
+                {"question": sample_question, "answer": "我做了检索", "skipped": False},
+                {"question": sample_question, "answer": "", "skipped": True},
+            ],
+        },
+    )
+    check("续面：turn_index 等于已答轮数", bool(restored) and restored["turn"]["turn_index"] == 2)
+    check("续面：历史里保留已回答内容", bool(restored) and restored["history"][0]["answer"] == "我做了检索")
+    check("续面：跳过的题答案为空", bool(restored) and restored["history"][1]["answer"] == "")
+    check("续面：没有待答题时返回 None", web_app._resume_state("s1", {"pending_question": None}) is None)
 
     failed = [name for name, ok, _ in checks if not ok]
     print()

@@ -71,6 +71,17 @@ def main() -> int:
         check("第一题有题干", bool(first["question"]["text"]))
         print(f"  第 1 题 [{first['question']['dimension']}] {first['question']['text']}")
 
+        # ---- 2.5 进行中的会话：transcript 要能给出「还没答的那题」，记录页靠它恢复面试
+        mid = client.get(f"/sessions/{session_id}/transcript")
+        check("进行中会话 /transcript 200", mid.status_code == 200, str(mid.status_code))
+        if mid.status_code == 200:
+            body = mid.json()
+            check("刚开面时 turns 为空", body.get("turns") == [], str(len(body.get("turns") or [])))
+            check(
+                "pending_question 就是第一题",
+                (body.get("pending_question") or {}).get("text") == first["question"]["text"],
+            )
+
         # ---- 3. 一轮轮回答，直到拿到报告
         current = first
         turn_no = 1
