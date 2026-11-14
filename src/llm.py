@@ -1,8 +1,11 @@
 """LLM 调用层：全项目只有这里能直接调模型。
 
-两个入口：
-- `chat()`               —— 要一段自由文字（后面写报告点评时用）
+唯一入口：
 - `call_json()`          —— 要一份结构化数据（Pydantic 实例）
+
+（曾经还有一个 `chat()` 用于自由文本，但全项目没有任何调用点：
+报告里每一段都是结构化字段，走 `call_json(ReportDraft)`。没人用的入口只会
+让人以为它被用了，所以删掉。）
 
 结构化输出走 LangChain 的 `ChatOpenAI.with_structured_output(schema)`：
 你给它一个 Pydantic 类，它返回的 runnable 直接吐出这个类的实例，
@@ -90,21 +93,6 @@ def get_chat_model(*, model: str | None = None, temperature: float = 0.0) -> Cha
             max_retries=2,
         )
     return _model_cache[key]
-
-
-def chat(
-    messages: list[BaseMessage] | list[dict[str, Any]],
-    *,
-    model: str | None = None,
-    temperature: float = 0.0,
-) -> str:
-    """要一段自由文字：发消息，拿字符串。"""
-    resp = get_chat_model(model=model, temperature=temperature).invoke(messages)
-    content = resp.content
-    if isinstance(content, str):
-        return content
-    # 少数多模态模型会返回 list[dict]，把其中的文本拼起来
-    return "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
 
 
 def get_structured_model(
