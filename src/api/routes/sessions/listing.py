@@ -9,7 +9,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
-from src.orm_models import SessionRecord
+from src import crud
 
 router = APIRouter(tags=["面试"])
 
@@ -17,7 +17,7 @@ router = APIRouter(tags=["面试"])
 @router.get("/sessions", response_model=list[dict], summary="会话列表")
 async def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
     """最近创建的会话，按创建时间倒序。返回数组，不是 `{"sessions": [...]}`。"""
-    rows = await SessionRecord.all().order_by("-created_at").limit(min(limit, 100))
+    rows = await crud.list_sessions(limit)
     return [
         {
             "session_id": row.session_id,

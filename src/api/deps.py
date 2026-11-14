@@ -15,6 +15,7 @@ from typing import Any
 
 from fastapi import Depends, HTTPException, Path
 
+from src import crud
 from src.graph.build import build_persistent_graph
 from src.orm_models import SessionRecord
 
@@ -37,7 +38,7 @@ async def get_session(
     注意参数名 `session_id` 必须和路由里的 `{session_id}` 同名——
     FastAPI 靠名字把路径参数注入进来，改名就 422。
     """
-    session = await SessionRecord.get_or_none(session_id=session_id)
+    session = await crud.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="会话不存在")
     return session

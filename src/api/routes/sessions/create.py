@@ -12,10 +12,10 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
+from src import crud
 from src.api import graph_io
 from src.api.deps import get_graph
 from src.model import SessionCreate, TurnOut
-from src.orm_models import SessionRecord
 
 router = APIRouter(tags=["面试"])
 
@@ -36,7 +36,7 @@ async def _start_interview(
 
     snapshot = await graph_io.read_snapshot(graph, config)
     jd_title = (snapshot.values.get("jd_profile") or {}).get("role_title", "")
-    await SessionRecord.create(session_id=session_id, jd_title=jd_title[:200])
+    await crud.create_session(session_id, jd_title)
     return graph_io.build_turn_out(session_id, snapshot)
 
 

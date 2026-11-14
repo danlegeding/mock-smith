@@ -13,11 +13,12 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends
 from langgraph.types import Command
 
+from src import crud
 from src.api import graph_io
 from src.api.deps import get_active_session, get_graph
 from src.graph.policy import active_dimensions
 from src.model import TurnOut
-from src.orm_models import ReportRecord, SessionRecord
+from src.orm_models import SessionRecord
 
 router = APIRouter(tags=["面试"])
 
@@ -31,7 +32,7 @@ async def _save_report_if_finished(session_id: str, values: dict[str, Any]) -> N
     if not report:
         return
 
-    session = await SessionRecord.get_or_none(session_id=session_id)
+    session = await crud.get_session(session_id)
     if session is None or session.status == "finished":
         return
 
@@ -43,20 +44,14 @@ async def _save_report_if_finished(session_id: str, values: dict[str, Any]) -> N
         d.value for d in active_dimensions(values.get("resume_profile") or {}) if d.value not in asked
     ]
 
-    await ReportRecord.create(
-        session=session,
-        overall=report["overall"],
+    await crud.save_report(
+        session,
+        report,
         overall_score=overall_score,
-        dimension_summary=averages,
-        strengths=report.get("strengths", []),
-        weaknesses=report.get("weaknesses", []),
-        gap_conclusion=report.get("gap_conclusion", ""),
-        next_steps=report.get("next_steps", []),
         turns_used=len(turns),
         skipped_dims=skipped_dims,
     )
-    session.status = "finished"
-    await session.save(update_fields=["status"])
+    await crud.finish_session(session)
 
 
 async def _submit_answer(
