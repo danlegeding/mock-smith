@@ -160,7 +160,7 @@ def plan_questions(state: InterviewState) -> dict[str, Any]:
             f"第一轮漏掉了这些维度：{names}。\n"
             f"请**只**针对这些维度出题，每个维度 1-2 道，其余维度不要出。"
         )
-        extra = call_json(QuestionPlan, system=system, user=extra_user, temperature=0.5)
+        extra = call_json(QuestionPlan, system=system_prompt, user=extra_user, temperature=0.5)
         kept += _filter_valid_questions(extra.questions, refs, seen, only_dims={d.value for d in missing})
 
     counts: dict[str, int] = {}
