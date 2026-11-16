@@ -9,6 +9,8 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
                                                                ▼
                                                         分维度报告
 ```
+<img width="1671" height="941" alt="一次完整的模拟面试流程解析" src="https://github.com/user-attachments/assets/bbe9ed2c-fb82-4631-84a0-658b18fe9ebd" />
+
 
 特点：面试过程本身是一个 **LangGraph 状态机**（流程可控、可复现、可写单元测试），而「该不该追问、难度要不要升、下一题问哪个维度」这类判断交给 **agent**（模型带工具 + 结构化输出）来做。中间状态全部落 PostgreSQL，同一个会话随时可以中断、重启后接着问。
 
@@ -59,7 +61,8 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
 
 ### 图（`src/graph/build.py`）
 
-![状态图](docs/architecture.png)
+<img width="1774" height="887" alt="AI模拟面试Agent技术架构" src="https://github.com/user-attachments/assets/68fa01e6-9478-4b9b-8620-c5dc9e253cb8" />
+
 
 `build_graph()` 编译后的实际形状（`docs/architecture.png` 由 `graph.get_graph().draw_mermaid_png()` 生成）。
 
