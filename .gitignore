@@ -1,4 +1,4 @@
-﻿.venv/
+.venv/
 __pycache__/
 *.pyc
 .env
@@ -13,7 +13,9 @@ _solutions/
 drafts/
 
 # 个人简历：含手机号/邮箱，不进仓库
-data/resumes/某同学*
+data/resumes/*
+!data/resumes/sample-*.md
 
 # 从招聘网站下载的真实 JD（含公司名），不进仓库
-data/jds/未命名*
+data/jds/*
+!data/jds/0*.md
