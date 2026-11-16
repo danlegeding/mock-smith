@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,6 +112,13 @@ def main() -> int:
     check("续面：历史里保留已回答内容", bool(restored) and restored["history"][0]["answer"] == "我做了检索")
     check("续面：跳过的题答案为空", bool(restored) and restored["history"][1]["answer"] == "")
     check("续面：没有待答题时返回 None", web_app._resume_state("s1", {"pending_question": None}) is None)
+
+    # 记录页的时间显示：接口给的是 UTC 的 ISO 串，界面上要是本机时区的「年:月:日 小时:分钟」
+    utc_raw = "2026-11-16T10:16:39.851360+00:00"
+    expected = datetime.fromisoformat(utc_raw).astimezone().strftime("%Y:%m:%d %H:%M")
+    check("时间：ISO 转成 年:月:日 小时:分钟", web_app._format_time(utc_raw) == expected, web_app._format_time(utc_raw))
+    check("时间：空值返回空串", web_app._format_time(None) == "")
+    check("时间：解析不了就原样返回", web_app._format_time("不是一个时间") == "不是一个时间")
 
     failed = [name for name, ok, _ in checks if not ok]
     print()

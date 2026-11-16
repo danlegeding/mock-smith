@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
@@ -341,6 +342,21 @@ def _resume_state(session_id: str, transcript: dict) -> dict | None:
     }
 
 
+def _format_time(raw: str | None) -> str:
+    """把接口给的 ISO 时间显示成 `年:月:日 小时:分钟`（本机时区）。
+
+    后端存的是 `timestamptz`，`isoformat()` 出来是 UTC（`+00:00`）；
+    `astimezone()` 不带参数会转成本机时区，避免界面上比实际时间慢 8 小时。
+    解析失败就原样返回，别为了格式化把整页搞崩。
+    """
+    if not raw:
+        return ""
+    try:
+        return datetime.fromisoformat(raw).astimezone().strftime("%Y:%m:%d %H:%M")
+    except ValueError:
+        return raw
+
+
 def render_records() -> None:
     """④ 历史会话：列表查 `sessions` 表，问答记录读图 state，报告查 `reports` 表。"""
     st.header("④ 会话记录")
@@ -363,7 +379,7 @@ def render_records() -> None:
     st.dataframe(
         [
             {
-                "时间": row.get("created_at", ""),
+                "时间": _format_time(row.get("created_at")),
                 "JD": row.get("jd_title", ""),
                 "状态": STATUS_LABELS.get(row.get("status"), row.get("status", "")),
                 "会话": row.get("session_id", ""),
@@ -375,7 +391,7 @@ def render_records() -> None:
     )
 
     labels = {
-        row["session_id"]: f"{row.get('created_at', '')} · {row.get('jd_title', '')} · {STATUS_LABELS.get(row.get('status'), row.get('status'))}"
+        row["session_id"]: f"{_format_time(row.get('created_at'))} · {row.get('jd_title', '')} · {STATUS_LABELS.get(row.get('status'), row.get('status'))}"
         for row in records
     }
     if st.session_state.get("records_pick") not in labels:
