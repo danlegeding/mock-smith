@@ -38,3 +38,17 @@ class TurnOut(BaseModel):
     question: Question | None = Field(default=None, description="type=question 时给出")
     report: Report | None = Field(default=None, description="type=report 时给出")
     turn_index: int = Field(ge=0, description="当前是第几轮，从 0 开始")
+
+
+class PdfUploadOut(BaseModel):
+    """接口出参：一份 PDF 被转成 md 并落盘之后的结果。
+
+    同时返回全文（`markdown`）——前端拿到就能直接塞进编辑框，不用再发一次请求。
+    简历/JD 一般几 KB，带上全文不心疼。
+    """
+
+    kind: Literal["jd", "resume"] = Field(description="上传的是哪类材料")
+    filename: str = Field(description="原始文件名")
+    saved_path: str = Field(description="落盘的 md 路径（相对项目根，如 data/jds/xxx.md）")
+    chars: int = Field(ge=0, description="转换后的字符数")
+    markdown: str = Field(description="转换后的全文，前端可直接填进编辑框")

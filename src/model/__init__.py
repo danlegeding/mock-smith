@@ -16,7 +16,7 @@ model/
 ├─ turn.py      一问一答：Turn
 ├─ report.py    报告：Strength / Weakness / ReportDraft（模型写）/ Report（代码补齐）
 ├─ gold.py      评测：GoldItem（人工标注的标准答案，见 src/eval/gold/）
-└─ api.py       接口：SessionCreate / SessionCreated / AnswerIn / TurnOut
+└─ api.py       接口：SessionCreate / SessionCreated / AnswerIn / TurnOut / PdfUploadOut
 ```
 
 三条约定（改字段前先看这三条）：
@@ -32,7 +32,7 @@ model/
 
 from __future__ import annotations
 
-from .api import AnswerIn, SessionCreate, SessionCreated, TurnOut
+from .api import AnswerIn, PdfUploadOut, SessionCreate, SessionCreated, TurnOut
 from .decision import Decision
 from .enums import (
     DIMENSIONS,
@@ -93,6 +93,7 @@ __all__ = [
     "SessionCreated",
     "AnswerIn",
     "TurnOut",
+    "PdfUploadOut",
 ]
 
 

@@ -125,11 +125,16 @@ python scripts/run_interview.py --thread itv-2 --auto   # 自动用假回答跑�
 | POST | `/sessions/{id}/answer` | 提交回答，返回下一题或最终报告 |
 | GET | `/sessions/{id}/report` | 已落库的报告（未结束返回 409） |
 | GET | `/sessions/{id}/transcript` | 完整问答记录（读图状态，不额外存表） |
+| POST | `/uploads/pdf` | 上传 PDF（`file` + `kind=jd\|resume`），转成 markdown 存进 `data/jds`、`data/resumes` |
 
 ```bash
 curl -X POST http://127.0.0.1:8010/sessions -H "Content-Type: application/json" ^
   -d "{\"jd_text\": \"...(JD 全文)\", \"resume_text\": \"...(简历全文)\"}"
 ```
+
+> 不想手抄 JD/简历：前端开面页的「📄 从 PDF 上传…」调的就是 `/uploads/pdf`。
+> 转换是纯文本抽取（`pypdf`），不经过大模型——模型会改写原文，破坏后续 `evidence_quote` 的逐字核对。
+> 已知局限：PDF 里的表格会被揉成一行；扫描件（图片型 PDF）抽不到文字，会直接返回 400。
 
 ---
 

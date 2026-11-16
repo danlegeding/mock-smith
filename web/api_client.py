@@ -84,3 +84,17 @@ def load_transcript(session_id: str) -> dict[str, Any]:
         resp = client.get(f"/sessions/{session_id}/transcript")
         resp.raise_for_status()
         return resp.json()
+
+
+def upload_pdf(filename: str, content: bytes, kind: str) -> dict[str, Any]:
+    """上传 JD / 简历 PDF：后端转成 markdown 存进 `data/`，返回
+    `{kind, filename, saved_path, chars, markdown}`（`markdown` 直接填进编辑框）。"""
+    with _client() as client:
+        resp = client.post(
+            "/uploads/pdf",
+            files={"file": (filename, content, "application/pdf")},
+            data={"kind": kind},
+        )
+        resp.raise_for_status()
+        return resp.json()
+

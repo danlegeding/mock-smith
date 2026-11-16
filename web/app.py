@@ -134,6 +134,42 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _upload_pdf(kind: str, label: str) -> None:
+    """上传 PDF → 后端转成 markdown 存进 `data/` → 全文写进 session_state 供编辑框使用。
+
+    同一份文件只上传一次（按「文件名 + 字节数」判断），避免每次 rerun 都重新转一遍。
+    """
+    upload = st.file_uploader(f"上传{label} PDF", type=["pdf"], key=f"pdf_{kind}")
+    if upload is None:
+        return
+
+    content = upload.getvalue()
+    signature = (upload.name, len(content))
+    if st.session_state.get(f"pdf_{kind}_sig") == signature:
+        return
+
+    with st.spinner("正在把 PDF 转成 markdown 并保存…"):
+        try:
+            result = api_client.upload_pdf(upload.name, content, kind)
+        except Exception as exc:  # noqa: BLE001
+            show_error(exc)
+            return
+
+    # 转换成功：把全文塞进会话状态，并 bump 一个版本号让编辑框重新取值
+    st.session_state[f"{kind}_text"] = result["markdown"]
+    st.session_state[f"{kind}_path"] = result["saved_path"]
+    st.session_state[f"{kind}_from_upload"] = True
+    st.session_state[f"pdf_{kind}_sig"] = signature
+    st.session_state[f"{kind}_version"] = st.session_state.get(f"{kind}_version", 0) + 1
+
+
+def _material_value(kind: str, sample: Path) -> str:
+    """编辑框的初始内容：刚上传过就用上传的全文，否则用选中的样本文件。"""
+    if st.session_state.get(f"{kind}_from_upload"):
+        return st.session_state.get(f"{kind}_text") or read_text(sample)
+    return read_text(sample)
+
+
 def render_start() -> None:
     st.header("① 开一场面试")
     st.write("选一份 JD 和一份简历（也可以直接手改文本），点开始后会依次跑：解析 → 缺口匹配 → 出题，再问第一题。")
@@ -144,13 +180,45 @@ def render_start() -> None:
         st.error(f"没找到样本数据：{JD_DIR} / {RESUME_DIR}")
         return
 
+    with st.expander("📄 从 PDF 上传（自动转成 markdown 存进 data/，可直接当样本用）"):
+        upload_col_jd, upload_col_resume = st.columns(2)
+        with upload_col_jd:
+            _upload_pdf("jd", " JD")
+        with upload_col_resume:
+            _upload_pdf("resume", "简历")
+
+        saved = [
+            f"{'JD' if kind == 'jd' else '简历'} → `{st.session_state.get(f'{kind}_path')}`"
+            for kind in ("jd", "resume")
+            if st.session_state.get(f"{kind}_path")
+        ]
+        if saved:
+            st.caption("已保存：" + "；".join(saved))
+        st.caption("上传后编辑框会自动换成 PDF 的内容；再选样本文件就切回样本。")
+
     col_jd, col_resume = st.columns(2)
     with col_jd:
         jd_file = st.selectbox("JD 样本", jd_files, format_func=lambda p: p.name)
-        jd_text = st.text_area("JD 内容", value=read_text(jd_file), height=260)
+        if st.session_state.get("jd_sample") != jd_file.name:
+            st.session_state["jd_sample"] = jd_file.name
+            st.session_state["jd_from_upload"] = False
+        jd_text = st.text_area(
+            "JD 内容",
+            value=_material_value("jd", jd_file),
+            height=260,
+            key=f"jd_area_{jd_file.name}_{st.session_state.get('jd_version', 0)}",
+        )
     with col_resume:
         resume_file = st.selectbox("简历样本", resume_files, format_func=lambda p: p.name)
-        resume_text = st.text_area("简历内容", value=read_text(resume_file), height=260)
+        if st.session_state.get("resume_sample") != resume_file.name:
+            st.session_state["resume_sample"] = resume_file.name
+            st.session_state["resume_from_upload"] = False
+        resume_text = st.text_area(
+            "简历内容",
+            value=_material_value("resume", resume_file),
+            height=260,
+            key=f"resume_area_{resume_file.name}_{st.session_state.get('resume_version', 0)}",
+        )
 
     if st.button("开始面试", type="primary", width="stretch"):
         with st.spinner("正在解析材料并出题，大约 20~60 秒…"):

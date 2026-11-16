@@ -26,6 +26,10 @@ fastapi==0.162.0
 uvicorn==0.54.0
 streamlit==1.66.1
 
+# ---- 文件上传：multipart 解析 + PDF 抽文本
+python-multipart==0.0.33
+pypdf==7.1.0
+
 # ---- 工具（check_*.py 用 httpx，gold 集的 yaml 用 PyYAML）
 PyYAML==6.0.3
 httpx==0.28.1

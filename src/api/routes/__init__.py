@@ -6,10 +6,11 @@
 
 from fastapi import APIRouter
 
-from src.api.routes import health, sessions
+from src.api.routes import health, sessions, uploads
 
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(sessions.router)
+api_router.include_router(uploads.router)
 
 __all__ = ["api_router"]
