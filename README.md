@@ -14,6 +14,29 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
 
 ---
 
+## 界面
+
+截图取自仓库自带的样本数据（`data/`，全部为虚构内容）：
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/01-start.png" alt="开面页" width="430"></td>
+    <td><img src="docs/screenshots/02-interview.png" alt="面试中" width="430"></td>
+  </tr>
+  <tr>
+    <td align="center">开面页：填 JD 与简历，或从 PDF 上传</td>
+    <td align="center">面试中：一次一问，支持追问与换维度</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/03-report.png" alt="报告页" width="430"></td>
+    <td><img src="docs/screenshots/04-records.png" alt="记录页" width="430"></td>
+  </tr>
+  <tr>
+    <td align="center">报告页：分维度评分，每条结论都带原话引用</td>
+    <td align="center">记录页：历史会话、返回、断点继续</td>
+  </tr>
+</table>
+
 ## 能做什么
 
 - 输入 JD 文本 + 简历文本，解析成结构化的岗位画像 / 候选人画像
@@ -181,7 +204,8 @@ src/
   app.py        FastAPI 组装与启动
 web/            Streamlit 前端（api_client.py + app.py 四屏）
 scripts/        验收脚本 + 命令行演示
-data/           样本 JD 和简历
+data/           样本 JD（6 份）和简历（5 份），均为虚构
+docs/           架构图 + 界面截图（screenshots/）
 docker/         init.sql（建 pgvector 扩展）
 DESIGN.md       设计文档：需求、口径、指标、日程
 notes.md        开发笔记：踩过的坑、prompt 迭代记录
