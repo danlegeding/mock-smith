@@ -1,0 +1,12 @@
+# gold_004 —— tech_depth / ok
+# 标注说明：链路完整、参数具体，但没讲为什么选这些参数，也没说效果怎么验证。
+schema_version: 1
+question_id: gold_004
+question_text: 你用 LangChain 做检索问答时，RAG 链路是怎么搭的？
+scoring_dimension: tech_depth
+question_difficulty: 2
+candidate_answer: |
+  文档先按固定长度切块，大概五百字、留五十字重叠，然后用 embedding 模型转向量存进向量库。提问时把问题也转向量，取最相似的三个块拼进 prompt 让模型回答。
+human_quality_level: ok
+human_evidence_quote: "取最相似的三个块拼进 prompt 让模型回答"
+annotation_note: "链路完整、参数具体，但没讲为什么选这些参数，也没说效果怎么验证。"

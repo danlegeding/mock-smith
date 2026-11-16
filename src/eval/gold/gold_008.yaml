@@ -1,0 +1,12 @@
+# gold_008 —— tech_depth / good
+# 标注说明：两个点都是真踩过的，且说了怎么改，能看出维护性是实际遇到的问题。
+schema_version: 1
+question_id: gold_008
+question_text: 你用 Python 写这个项目时，哪些地方最影响维护？
+scoring_dimension: tech_depth
+question_difficulty: 2
+candidate_answer: |
+  最开始所有路由都堆在一个文件里，加一个接口改三处，后来按资源拆成每文件一个端点，公共依赖放 deps 里。另一个坑是列表被原地修改：拿到 state 里的列表直接改元素，结果下游读到脏数据，改成整体替换才修好。
+human_quality_level: good
+human_evidence_quote: "拿到 state 里的列表直接改元素"
+annotation_note: "两个点都是真踩过的，且说了怎么改，能看出维护性是实际遇到的问题。"

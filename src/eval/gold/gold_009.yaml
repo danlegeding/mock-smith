@@ -1,0 +1,12 @@
+# gold_009 —— project_authenticity / ok
+# 标注说明：说了具体流程和事务处理，能对上系统设计；但没提并发或测试，属于达到实习水平。
+schema_version: 1
+question_id: gold_009
+question_text: 你在图书馆管理系统里，借阅和归还这块具体做了什么？
+scoring_dimension: project_authenticity
+question_difficulty: 2
+candidate_answer: |
+  借阅时先查这本书还有没有库存，有就插一条借阅记录、库存减一，这两个操作放在一个事务里；归还时更新记录状态、库存加一。逾期判断是按归还时间和应还时间比较，没做定时任务。
+human_quality_level: ok
+human_evidence_quote: "这两个操作放在一个事务里"
+annotation_note: "说了具体流程和事务处理，能对上系统设计；但没提并发或测试，属于达到实习水平。"

@@ -1,0 +1,12 @@
+# gold_010 —— job_match / good
+# 标注说明：把自己的真实经历对应到岗位要求，还带了一个具体发现，属于超出预期的回答。
+schema_version: 1
+question_id: gold_010
+question_text: 这个岗位要自己搭 RAG 链路并做评测，你哪些经历对得上？
+scoring_dimension: job_match
+question_difficulty: 2
+candidate_answer: |
+  评测这块我做过一点：给面试 Agent 的评分标了十份人工标准，用 Spearman 和平均误差看模型评分跟人评的一致度，发现模型对“只讲概念不讲做法”的回答会偏高分，就加了必须引用原话的规则。RAG 我搭过切块、向量检索那套，评测这块还算对得上。
+human_quality_level: good
+human_evidence_quote: "加了必须引用原话的规则"
+annotation_note: "把自己的真实经历对应到岗位要求，还带了一个具体发现，属于超出预期的回答。"

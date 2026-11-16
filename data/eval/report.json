@@ -1,0 +1,102 @@
+[
+  {
+    "id": "gold_001",
+    "dimension": "tech_depth",
+    "human_level": "good",
+    "human_score": 5.0,
+    "pred": 0.0,
+    "valid": false,
+    "quote": {},
+    "comment": ""
+  },
+  {
+    "id": "gold_002",
+    "dimension": "communication",
+    "human_level": "bad",
+    "human_score": 1.0,
+    "pred": 2.0,
+    "valid": true,
+    "quote": "就多沟通吧，大家都是为了项目好，实在不行就听产品经理的。",
+    "comment": "回答能对上“怎么对齐”这个问题，但表达非常笼统，只有原则性说法，没有对齐方法、步骤或案例，结构也不清晰。"
+  },
+  {
+    "id": "gold_003",
+    "dimension": "project_authenticity",
+    "human_level": "ok",
+    "human_score": 3.0,
+    "pred": 2.0,
+    "valid": true,
+    "quote": "用 LCEL 把 prompt、模型和解析器串成一条链，检索那步单独写了个函数返回文档列表，链里直接调用。会话历史是拼在 prompt 里的，没做单独的记忆模块。",
+    "comment": "能说出自己做了哪几块串联，但只有流程描述，没有场景细节、卡点或结果，真实性细节偏少。"
+  },
+  {
+    "id": "gold_004",
+    "dimension": "tech_depth",
+    "human_level": "ok",
+    "human_score": 3.0,
+    "pred": 0.0,
+    "valid": false,
+    "quote": {},
+    "comment": ""
+  },
+  {
+    "id": "gold_005",
+    "dimension": "job_match",
+    "human_level": "bad",
+    "human_score": 1.0,
+    "pred": 2.0,
+    "valid": true,
+    "quote": "学过 LangChain 和 RAG",
+    "comment": "只提到学过相关工具和做过项目，但没有说明与 AI 应用落地岗位的具体结合方式，差距认知也比较笼统。"
+  },
+  {
+    "id": "gold_006",
+    "dimension": "engineering_thinking",
+    "human_level": "ok",
+    "human_score": 3.0,
+    "pred": 3.0,
+    "valid": true,
+    "quote": "请求参数都用 Pydantic 模型校验，出错时统一用一个异常处理器返回固定结构；每个请求生成一个 request id 打进日志，出问题能按 id 串起来查。",
+    "comment": "能说出参数校验、统一异常处理和 request id 日志串联，属于基本工程做法，但没有提到失败边界、性能影响或如何验证稳定性。"
+  },
+  {
+    "id": "gold_007",
+    "dimension": "project_authenticity",
+    "human_level": "bad",
+    "human_score": 1.0,
+    "pred": 1.0,
+    "valid": true,
+    "quote": "整体架构",
+    "comment": "回答只有“整体架构”“查了资料、问了同学”这类笼统表述，没有具体负责内容、卡点或解决细节，真实性细节不足。"
+  },
+  {
+    "id": "gold_008",
+    "dimension": "tech_depth",
+    "human_level": "good",
+    "human_score": 5.0,
+    "pred": 3.0,
+    "valid": true,
+    "quote": "最开始所有路由都堆在一个文件里，加一个接口改三处，后来按资源拆成每文件一个端点，公共依赖放 deps 里。另一个坑是列表被原地修改：拿到 state 里的列表直接改元素，结果下游读到脏数据，改成整体替换才修好。",
+    "comment": "能说清具体做法和遇到的坑，但主要停留在维护性改造的现象描述，取舍理由和边界条件没有展开。"
+  },
+  {
+    "id": "gold_009",
+    "dimension": "project_authenticity",
+    "human_level": "ok",
+    "human_score": 3.0,
+    "pred": 4.0,
+    "valid": true,
+    "quote": "借阅时先查这本书还有没有库存，有就插一条借阅记录、库存减一，这两个操作放在一个事务里；归还时更新记录状态、库存加一。逾期判断是按归还时间和应还时间比较，没做定时任务。",
+    "comment": "能说清借阅、归还和逾期判断的具体实现，但缺少更细的个人决策过程、卡点和结果验证，真实性细节还不够扎实。"
+  },
+  {
+    "id": "gold_010",
+    "dimension": "job_match",
+    "human_level": "good",
+    "human_score": 5.0,
+    "pred": 3.0,
+    "valid": true,
+    "quote": "RAG 我搭过切块、向量检索那套",
+    "comment": "有自己搭过 RAG 链路和做评测的直接经历，但只覆盖了切块、向量检索和简单一致度评测，没看到完整评测体系或与岗位场景的深入结合。"
+  }
+]

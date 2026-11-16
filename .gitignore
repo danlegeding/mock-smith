@@ -11,3 +11,6 @@ _solutions/
 .cache/
 
 drafts/
+
+# 个人简历：含手机号/邮箱，不进仓库
+data/resumes/某同学*
