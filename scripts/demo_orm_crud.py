@@ -1,17 +1,4 @@
-"""练手脚本：用「脚本方式」练 Tortoise 的增删改查（仿 fastapi_code/16 的写法）。
-
-跑法（项目根目录，先 conda activate interview-agent）：
-    python scripts/demo_orm_crud.py
-
-它演示的顺序和教程那套完全一样：
-    init()（连库 + 建表）→ 增 → 查单条 → 查多条 → 模糊查 → 改 → 删 → 关连接
-
-和 `scripts/check_orm.py` 的区别：
-- `check_orm.py` 是**验收脚本**（断言 + PASS/FAIL，给 CI 用）
-- 本文件是**练习脚本**（打印每一步，给自己看明白 ORM 在干什么）
-
-数据都用 `demo-` 开头，跑完自己删干净，不污染真实会话。
-"""
+"""练手脚本：用「脚本方式」练 Tortoise 的增删改查（仿 fastapi_code/16 的写法）。"""
 
 from __future__ import annotations
 

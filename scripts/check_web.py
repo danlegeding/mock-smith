@@ -1,11 +1,4 @@
-"""前端验收：不打开浏览器，也能验证 Streamlit 页面能跑起来。
-
-原理：Streamlit 自带的 `AppTest` 会在进程内执行 `web/app.py`（和真实访问一样跑一遍脚本），
-我们断言"没有异常 + 关键控件都在"。这样前端改动也有了一条命令的回归检查。
-
-跑法（后端要开着）：
-    python scripts/check_web.py
-"""
+"""前端验收：不打开浏览器，也能验证 Streamlit 页面能跑起来。"""
 
 from __future__ import annotations
 

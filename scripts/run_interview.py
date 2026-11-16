@@ -1,14 +1,4 @@
-"""命令行跑一场模拟面试（D8 版本：出题 → 提问 → 评分 → 决策 → 报告）。
-
-跑法：
-    conda activate interview-agent
-    python scripts/run_interview.py --thread itv-1            # 交互：自己敲回答
-    python scripts/run_interview.py --thread itv-2 --auto     # 自动：用脚本里的假回答
-    python scripts/run_interview.py --thread itv-3 --auto --skip 2   # 第 2 题回答"不会"
-
-这个文件是"人肉驱动"的，作用是验证图能一轮轮转起来、状态能续上。
-等 D8 做了 FastAPI，驱动就换成前端了；这个脚本仍然留着做冒烟测试。
-"""
+"""命令行跑一场模拟面试（D8 版本：出题 → 提问 → 评分 → 决策 → 报告）。"""
 
 from __future__ import annotations
 

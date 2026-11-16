@@ -9,11 +9,7 @@ from .question import Question, QuestionKind
 
 
 class Decision(BaseModel):
-    """decide_next 的决策结果。
-
-    `reason` 是必填的：一个说不出理由的决策，考核时没法辩护，
-    面试官（和评测）也没法判断它是不是碰巧蒙对的。
-    """
+    """decide_next 的决策结果。"""
 
     action: DecideAction = Field(description="下一步动作：next / deepen / raise_difficulty / lower_difficulty / switch_dim / end")
     reason: str = Field(min_length=4, description="一句话说明为什么这么决定，必须引用具体依据（分数、信号、已问轮数）")

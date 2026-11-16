@@ -1,10 +1,4 @@
-"""枚举与常量：全项目的"词表"。
-
-**规则：枚举值一律用英文标识符。**
-这些值会出现在 `model_json_schema()` 里 → 拼进 prompt 给模型看 → 再出现在
-日志、报告和测试里。中文放在类 docstring 和 `Field(description=...)` 里，
-那部分同样会进 prompt，模型照样看得懂；而值保持英文，日志好 grep、代码好比较。
-"""
+"""枚举与常量：全项目的"词表"。"""
 
 from __future__ import annotations
 
@@ -20,12 +14,7 @@ class Seniority(str, Enum):
 
 
 class MatchLevel(str, Enum):
-    """简历与某项要求的匹配程度。
-
-    strong  = 有，且对得上（JD 要 LangGraph，简历写了用过）
-    weak    = 沾边但不是这个（JD 要 pgvector，简历只写 MySQL）
-    missing = 完全没提（JD 要 Docker，简历零字）
-    """
+    """简历与某项要求的匹配程度。"""
 
     STRONG = "strong"
     WEAK = "weak"
@@ -43,11 +32,7 @@ class Dimension(str, Enum):
 
 
 class QuestionKind(str, Enum):
-    """问题类型。注意这里只描述「题从哪来」，不描述「问得深不深」。
-
-    「深挖」是决策（DecideAction.DEEPEN），不是题的类型：决定深挖时唯一出路就是
-    即时生成一个 kind=followup、带 anchor_quote 的题，所以不需要第二个枚举值。
-    """
+    """问题类型。注意这里只描述「题从哪来」，不描述「问得深不深」。"""
 
     OPENING = "opening"  # 主问题（来自题池）
     FOLLOWUP = "followup"  # 基于上一轮回答的追问（必须引原话）

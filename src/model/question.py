@@ -32,10 +32,6 @@ class Question(BaseModel):
 
 
 class QuestionPlan(BaseModel):
-    """题池：plan_questions 节点的产出。
-
-    为什么不用 `list[Question]` 直接当 schema：结构化输出要求 JSON 顶层是对象，
-    包一层 `{"questions": [...]}` 各家的 function calling / json_schema 都稳。
-    """
+    """题池：plan_questions 节点的产出。"""
 
     questions: list[Question] = Field(min_length=1, description="题目池，按建议提问顺序排")

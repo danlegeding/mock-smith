@@ -1,27 +1,4 @@
-"""LLM 调用层：全项目只有这里能直接调模型。
-
-唯一入口：
-- `call_json()`          —— 要一份结构化数据（Pydantic 实例）
-
-（曾经还有一个 `chat()` 用于自由文本，但全项目没有任何调用点：
-报告里每一段都是结构化字段，走 `call_json(ReportDraft)`。没人用的入口只会
-让人以为它被用了，所以删掉。）
-
-结构化输出走 LangChain 的 `ChatOpenAI.with_structured_output(schema)`：
-你给它一个 Pydantic 类，它返回的 runnable 直接吐出这个类的实例，
-不用自己解析 JSON 字符串，也不用自己拼 JSON Schema 塞进 prompt。
-
-三个参数值得知道：
-- `method`：`"function_calling"`（工具调用，兼容性最好，默认用它）、
-  `"json_schema"`（OpenAI 严格结构化输出，中转站不一定支持）、
-  `"json_mode"`（要求 prompt 里出现 "JSON" 字样）。
-- `include_raw=True`：返回 `{"raw": AIMessage, "parsed": 实例或 None,
-  "parsing_error": 异常或 None}`。解析失败率是可以统计的指标，别把它藏起来。
-- `temperature=0`：抽取类任务不需要创造力。
-
-base_url 必须自带 `/v1`（.env 里写全，例如 https://api.openai-proxy.org/v1）：
-中转站少这一段就是 404 page not found。
-"""
+"""LLM 调用层：全项目只有这里能直接调模型。"""
 
 from __future__ import annotations
 
@@ -41,20 +18,14 @@ T = TypeVar("T", bound=BaseModel)
 
 Method = Literal["function_calling", "json_schema", "json_mode"]
 
-# 模块被 import 时读一次 .env，把里面的键写进 os.environ。
-# 不加 override=True：真实环境变量优先级要高于文件（测试/CI 靠这个改配置）。
+# 不加 override=True：真实环境变量优先于 .env（测试/CI 靠这个改配置）
 load_dotenv()
 
-# 默认模型。中转站上 gpt-5.4-mini 实测可用（chat 和两种结构化输出都通）。
 DEFAULT_MODEL = "gpt-5.4-mini"
 
 
 def _env(*names: str, default: str | None = None) -> str | None:
-    """按顺序取第一个非空的同名环境变量。
-
-    为什么列多个名字：.env 里用过 CLOSEAI_* 这套，以后可能改成 OPENAI_* / LLM_*。
-    在这里一次认完，改 .env 不用回来改代码。
-    """
+    """按顺序取第一个非空的同名环境变量。"""
     for name in names:
         value = os.getenv(name)
         if value:
@@ -62,22 +33,12 @@ def _env(*names: str, default: str | None = None) -> str | None:
     return default
 
 
-# ChatOpenAI 内部持有 httpx 连接池，别每次调用都新建一个。
-# key 用 (model, temperature)，同一规格复用同一个实例。
+# ChatOpenAI 内部持有连接池，按 (model, temperature) 复用实例
 _model_cache: dict[tuple[str, float], ChatOpenAI] = {}
 
 
 def get_chat_model(*, model: str | None = None, temperature: float = 0.0) -> ChatOpenAI:
-    """模型工厂：按 (model, temperature) 缓存实例。
-
-    两个坑：
-    1. `model or _env("LLM_MODEL", default=...)` 的兜底不能省：调用方不传 model 时它是 None，
-       直接塞给 ChatOpenAI 会报 "model Input should be a valid string"。
-    2. 这里的键名必须和 .env 里的一致（CLOSEAI_API_KEY / CLOSEAI_API_URL）。
-       配错不会报"配置错了"，只会在后面拿到 None，然后炸在一行看不懂的 pydantic 报错上。
-    3. base_url 从 .env 原样读，不做拼接——所以 .env 里必须写全 `.../v1`。
-       少了 /v1 的症状是 404 page not found；整个缺了会回落到官方 api.openai.com 再 401。
-    """
+    """模型工厂：按 (model, temperature) 缓存实例。"""
     name = model or _env("LLM_MODEL", default=DEFAULT_MODEL)
     key = (name, temperature)
     if key not in _model_cache:
@@ -133,10 +94,7 @@ def call_json(
     method: Method = "function_calling",
     retries: int = 2,
 ) -> T:
-    """要一份结构化数据；校验/解析失败就把错误原文喂回去重试。
-
-    返回的已经是 `schema` 的实例，可以直接用 `.field` 取值。
-    """
+    """要一份结构化数据；校验/解析失败就把错误原文喂回去重试。"""
     messages: list[BaseMessage] = [SystemMessage(content=system), HumanMessage(content=user)]
 
     last_err: Exception | None = None
@@ -153,14 +111,9 @@ def call_json(
         last_err = err or RuntimeError("模型没有给出可解析的结构化输出")
         log.warning("第 %d 次结构化输出失败: %s", attempt + 1, str(last_err)[:300])
 
-        # 关键的一步：把模型刚才的输出 + 校验器说的错误一起塞回对话。
-        # 模型看得懂自己的错误，会自己改；我们不用写一行"该怎么修"的逻辑。
-        #
-        # 坑：不能把 raw 原样塞回去。走 function_calling 时它是带 tool_calls 的
-        #     AIMessage，而 OpenAI 规定 assistant 的 tool_calls 后面必须紧跟对应的
-        #     tool 消息；少一条就整轮 400：
-        #     An assistant message with 'tool_calls' must be followed by tool messages...
-        #     所以要的只是"它上轮输出了什么"，先压成纯文本再追加，别把函数调用的壳带回去。
+        # 把模型上一轮的输出和校验错误一起塞回去，让它自己改
+        # 坑：raw 走 function_calling 时带 tool_calls，原样追加会 400（assistant 的 tool_calls 后必须紧跟 tool 消息），
+        # 所以先压成纯文本
         messages.append(AIMessage(content=_as_plain_text(raw)))
         messages.append(
             HumanMessage(

@@ -1,30 +1,4 @@
-"""节点 3：plan_questions —— 出题池。
-
-输入：JD 结构 + 简历结构 + 缺口清单（match_gap 的产出）
-输出：10 道题，每道题带"考哪个维度 / 多难 / 依据哪一条"。
-
-## 这一层为什么要单独存在，而不是"问一题生成一题"
-
-1. **可对比**：整池题一起生成，才能保证 5 个维度都覆盖到；一问一生成很容易
-   一直逮着 Python 问 8 轮。
-2. **可审查**：题池是写进 state 的数据，面试前可以人工看一眼，不合规的提前删掉。
-3. **可复用**：追问是在题池之外临时生成的（followup），主问题从池里挑，
-   池子被消耗掉就换维度，逻辑干净。
-
-## 三种"别问"
-
-- 判 `missing` 的技能不许出深挖题——人家没写过，问了只会得到"不太了解"。
-  对这种只出**探底题**（难度 1）。
-- 不许出 `followup`。追问必须基于候选人刚说的话，提前生成就是瞎问。
-- 不许编简历里没有的项目；`evidence_ref` 必须能在"可引用 id"表里查到。
-
-## 代码里做了什么、没做什么
-
-- 做了什么：拼输入、调模型、**过滤掉 evidence_ref 不存在的题**（护栏 G1 的简化版）。
-  模型偶尔会编 id（s99），这一层直接扔掉，不让脏数据流到下游。
-- 没做什么：不帮模型想题。规则全在 `prompts/plan_questions.md` 里，
-  改出题风格改那个文件就行，不用动代码。
-"""
+"""节点 3：plan_questions —— 出题池。"""
 
 from __future__ import annotations
 
@@ -44,10 +18,7 @@ PLAN_SIZE = 10
 
 
 def _build_evidence_ref_table(jd_profile: JDProfileDict, resume_profile: ResumeProfileDict) -> dict[str, str]:
-    """列出"允许被引用的 id"：JD 的 s1/s2…、简历的 p1/p2…、e1/e2…
-
-    evidence_ref 只能从这里选。这是最简单有效的一道护栏：模型编不出不存在的 id。
-    """
+    """列出"允许被引用的 id"：JD 的 s1/s2…、简历的 p1/p2…、e1/e2…"""
     refs: dict[str, str] = {}
     for key, label in (("must_skills", "硬性要求"), ("nice_skills", "加分项")):
         for item in jd_profile.get(key, []):
@@ -113,10 +84,7 @@ def _filter_valid_questions(
     seen: set[str],
     only_dims: set[str] | None = None,
 ) -> list[Question]:
-    """过滤 + 清洗一批题：evidence_ref 合法、题干干净、不重复。
-
-    `only_dims` 不为空时只留这些维度的题（补题那一轮用）。
-    """
+    """过滤 + 清洗一批题：evidence_ref 合法、题干干净、不重复。"""
     kept: list[Question] = []
     for question in questions:
         if only_dims is not None and question.dimension.value not in only_dims:

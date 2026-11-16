@@ -1,17 +1,4 @@
-"""验收脚本：gold 集的格式与覆盖度（不需要模型、不需要数据库，秒跑）。
-
-检查三类东西，只有第一类是"错了就红"：
-
-1. 硬错误（exit 1）：yaml 读不了、字段类型/枚举非法、question_id 和文件名不一致、
-   human_evidence_quote 不在 candidate_answer 里（说明是凭记忆写的，不是照抄的）。
-2. 格式提示：每条记录的维度/档位/难度分布。
-3. 进度提示（不影响 exit code）：条数、五维度覆盖、三档覆盖——标注进行中，
-   这些是"还差什么"，不是"你做错了"。
-
-用法：
-    python scripts/check_gold.py
-    python scripts/check_gold.py --target 12      # 换目标条数
-"""
+"""验收脚本：gold 集的格式与覆盖度（不需要模型、不需要数据库，秒跑）。"""
 
 from __future__ import annotations
 

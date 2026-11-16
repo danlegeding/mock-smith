@@ -1,7 +1,4 @@
-"""GET /sessions —— 会话列表。
-
-给「报告页 / 调试 / 演示时展示历史」用。只查业务表 `sessions`，不碰图（不花模型钱）。
-"""
+"""GET /sessions —— 会话列表。"""
 
 from __future__ import annotations
 

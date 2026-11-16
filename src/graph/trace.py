@@ -1,9 +1,4 @@
-"""把 agent 的工具调用打到日志里。
-
-为什么需要：agent 和外层代码的区别就在"它自己决定调什么工具"。
-看不见工具调用，就没法判断它到底是在自主决策还是在瞎编——
-本地调试、面试演示都靠这几行日志。
-"""
+"""把 agent 的工具调用打到日志里。"""
 
 from __future__ import annotations
 
@@ -43,11 +38,7 @@ def tool_logger(prefix: str = "") -> ToolCallLogger | None:
 
 
 def tool_callbacks(prefix: str = "") -> list[BaseCallbackHandler]:
-    """给 invoke(config={"callbacks": ...}) 用的回调列表。
-
-    有记录器就返回 [记录器]，静音时返回空列表——
-    这样调用方不用写 `[x] if (x := tool_logger()) else []` 这种表达式。
-    """
+    """给 invoke(config={"callbacks": ...}) 用的回调列表。"""
     handler = tool_logger(prefix)
     if handler is None:
         return []

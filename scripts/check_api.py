@@ -1,14 +1,4 @@
-"""端到端验收：对着已经跑起来的 API 打一遍完整面试。
-
-前置：数据库容器在跑 + uvicorn 已启动
-    python -m uvicorn src -.app:app --port 8010
-跑法：
-    python scripts/check_api.py                      # 默认 http://127.0.0.1:8010
-    python scripts/check_api.py --base-url http://127.0.0.1:8000
-
-和 test_schemas.py / check_parse.py / check_orm.py 的区别：这个查的是"接口层接线对不对"，
-不查模型质量——模型输出是好是坏，看报告自己判断。
-"""
+"""端到端验收：对着已经跑起来的 API 打一遍完整面试。"""
 
 from __future__ import annotations
 

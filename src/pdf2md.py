@@ -1,30 +1,4 @@
-"""PDF → Markdown：把上传的 JD / 简历 PDF 落成 `data/` 下的 `.md` 文件。
-
-## 为什么要转成 md 存目录，而不是存数据库
-
-- 下游 `parse_inputs` 读的就是 md 文本（`data/jds/*.md`、`data/resumes/*.md`），
-  用户上传的 PDF 和仓库里的样本走同一条路，测试才有意义；
-- md 是纯文本：能直接改错字、能进 git 看历史、能 diff；
-- PDF 是二进制，塞进数据库既占地方又没法看。
-
-## 为什么用代码转，不调模型
-
-PDF 抽文本是确定性任务。用模型转会多一次调用（慢、花钱），还可能把原文改掉——
-简历/JD 是要逐字对齐证据的材料，改写等于毁掉后面 `evidence_quote` 的核对。
-
-## 转换做了什么
-
-1. `pypdf` 逐页抽文本；
-2. 删掉每页重复出现的页眉页脚、纯页码行、目录里的点点点引导行；
-3. `• ● ▪ - *` 之类的项目符号统一成 `- `；
-4. 看起来像小标题的行（短、以冒号结尾、或「一、」「1.1」这类编号）转成 `## `；
-5. 把 PDF 硬换行打断的句子接回去（中文直接接，英文补空格）。
-
-**合并只看「上一行够长」**：硬换行会把一行写满（>=25 字），表格单元格通常很短，
-这样表格不会被揉成一大段。这是启发式，不是排版还原。
-
-不做的：不还原表格、不认扫描件（图片型 PDF 抽不出文字，会明确报错）。
-"""
+"""PDF → Markdown：把上传的 JD / 简历 PDF 落成 `data/` 下的 `.md` 文件。"""
 
 from __future__ import annotations
 
@@ -64,10 +38,7 @@ _SECTION_NAMES = {
 
 
 def slugify(filename: str) -> str:
-    """把上传的文件名变成安全的文件名：只留中英文数字和 `-_`，其余换成 `-`。
-
-    纯符号/空名兜底成时间戳，避免多个上传互相覆盖。
-    """
+    """把上传的文件名变成安全的文件名：只留中英文数字和 `-_`，其余换成 `-`。"""
     stem = Path(filename).stem.strip()
     stem = re.sub(r"[^\w\u4e00-\u9fff\-]+", "-", stem, flags=re.UNICODE).strip("-")
     stem = re.sub(r"-{2,}", "-", stem)
@@ -197,11 +168,7 @@ def pdf_bytes_to_markdown(data: bytes, *, title: str | None = None) -> str:
 
 
 def save_markdown(markdown: str, *, kind: str, filename: str) -> Path:
-    """把转换结果写到 `data/jds/` 或 `data/resumes/`，返回落盘路径。
-
-    重名规则：内容完全相同就用原文件（重复上传幂等）；内容不同就加 `-2`、`-3` 后缀，
-    绝不覆盖用户已有的样本。
-    """
+    """把转换结果写到 `data/jds/` 或 `data/resumes/`，返回落盘路径。"""
     if kind not in KIND_DIRS:
         raise ValueError(f"kind 只能是 {list(KIND_DIRS)}，收到 {kind!r}")
 

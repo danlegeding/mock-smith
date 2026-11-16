@@ -1,16 +1,4 @@
-"""校验 `src/graph/state.py` 里的 TypedDict 与 `src/model/` 的 Pydantic 模型是否对得上。
-
-为什么需要它：state 里的字段都是"某个 Pydantic 模型 dump 成 JSON 后的样子"，
-TypedDict 是手写的副本。改模型忘了改 state.py，或者反过来，IDE 不会报错，
-但读代码的人会被骗。这个脚本把两边摊开对比。
-
-检查三件事：
-1. 键名一致：TypedDict 的键 == 模型的字段 + computed_field（valid/avg 这种）。
-2. 枚举字段是 str：模型里 type=Dimension/MatchLevel 的字段，dump 后是字符串。
-3. 8 个节点的 state 参数都标注成了 InterviewState。
-
-跑法：python scripts/check_state_types.py
-"""
+"""校验 `src/graph/state.py` 里的 TypedDict 与 `src/model/` 的 Pydantic 模型是否对得上。"""
 
 from __future__ import annotations
 

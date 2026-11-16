@@ -1,10 +1,4 @@
-"""端点：上传 JD / 简历 PDF，转成 markdown 落到 `data/` 下。
-
-为什么单独一个路由文件：`routes/sessions/` 管"面试流程"，这个管"准备材料"，
-两类事没有依赖关系，拆开以后加"上传"相关的东西不会碰面试主流程。
-
-为什么返回全文：前端拿到 `markdown` 直接填进编辑框，省一次 GET。
-"""
+"""端点：上传 JD / 简历 PDF，转成 markdown 落到 `data/` 下。"""
 
 from __future__ import annotations
 

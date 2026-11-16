@@ -1,20 +1,4 @@
-"""从真实的题池生成 gold 集的「填空骨架」——你只负责填回答和档位。
-
-为什么需要它：
-手写 gold 集最费劲的不是标注，是"想题"。但题已经有更好的来源——让你的系统自己出题，
-你只需要对每道题写 3 种水平的回答（good / ok / bad），这比凭空想题快得多。
-
-用法（在项目根目录，后端不用开，直接跑节点）：
-    python scripts/make_gold_drafts.py --count 8
-    python scripts/make_gold_drafts.py --count 8 --jd data/jds/02-ai-agent-develop.md
-
-产出：`src/eval/gold/_drafts/gold_XXX.yaml`
-- 题目、维度、难度、依据都帮你填好了；
-- `candidate_answer` / `human_quality_level` / `human_evidence_quote` 留了 TODO；
-- 填完把文件挪到 `src/eval/gold/`，再跑 `python scripts/check_gold.py` 就会校验。
-
-注意：`_drafts/` 里是草稿，`load_gold_set()` 只读 `src/eval/gold/*.yaml`，不会把半成品算进评测。
-"""
+"""从真实的题池生成 gold 集的「填空骨架」——你只负责填回答和档位。"""
 
 from __future__ import annotations
 

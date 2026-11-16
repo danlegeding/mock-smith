@@ -1,16 +1,4 @@
-"""评测脚本：拿 gold 集检验 AI 评分跟人工评分的一致性。
-
-跑法（项目根目录）：
-    python scripts/run_eval.py                 # 跑全部 10 条
-    python scripts/run_eval.py --limit 3       # 只跑前 3 条，先看看通不通
-    python scripts/run_eval.py --out data/eval/report.json
-
-指标口径：
-- Spearman ρ：把「AI 分」和「人工分」各自排名后算相关系数（不依赖 scipy，自己排）。
-  1.0 = 排序完全一致；0 = 无关；负数 = 反着排。样本 10 条时，ρ ≥ 0.7 算可用。
-- MAE：平均绝对误差，单位是「分」（满分 5）。
-- 档位一致率：AI 分按 <2 → bad、<4 → ok、其余 good 映射回三档，跟人工标注对比。
-"""
+"""评测脚本：拿 gold 集检验 AI 评分跟人工评分的一致性。"""
 
 from __future__ import annotations
 

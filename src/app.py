@@ -1,22 +1,4 @@
-"""FastAPI 应用入口：只负责"组装"与"启动"，不写任何业务/路由细节。
-
-三种启动方式，效果完全一样（推荐第一种，省得记参数）：
-
-    python src/app.py                 # 直接跑，端口/地址走默认值
-    python -m src.app                 # 等价的模块方式
-    uvicorn src.app:app --port 8010   # 老办法，CI/部署里常用
-
-可调环境变量：APP_HOST（默认 127.0.0.1）、APP_PORT（默认 8010）、APP_RELOAD=1（改代码自动重启）。
-也可以直接传参：`python src/app.py --port 8011 --reload`。
-
-结构：
-    create_app()  建 app：lifespan（开库/关库）+ CORS + 错误处理 + 挂路由
-    app           模块级实例，`uvicorn src.app:app` 用的就是它
-
-为什么用工厂函数而不是在模块顶层东挂一点西挂一点：
-- 测试可以 `create_app()` 造一个干净的 app（比如将来把 DB 换成 sqlite）；
-- 组装顺序集中在一处，看这一个函数就知道"这个服务装了什么"。
-"""
+"""FastAPI 应用入口：只负责"组装"与"启动"，不写任何业务/路由细节。"""
 
 from __future__ import annotations
 
@@ -46,12 +28,7 @@ from src.orm import close_db, init_db
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    """启动时：建两套存储（checkpointer 表 + 业务表）；关闭时：按相反顺序释放。
-
-    `global_fallback=True` 必须传：tortoise-orm 1.1.9 把连接存在 contextvar 里，
-    lifespan 和请求处理不在同一个任务，不打开全局回退，端点里第一次查库就会报
-    `RuntimeError: No TortoiseContext is currently active`。脚本单任务不需要，应用必须开。
-    """
+    """启动时：建两套存储（checkpointer 表 + 业务表）；关闭时：按相反顺序释放。"""
     await init_db(global_fallback=True)
     get_graph()
     try:
@@ -93,11 +70,7 @@ app = create_app()
 
 
 def port_in_use(host: str, port: int) -> bool:
-    """探测端口上是不是已经有服务在监听。
-
-    用「连一下」而不是「bind 一下」判断：bind 会被 TIME_WAIT 干扰，误报"被占用"；
-    connect 通了才说明真有个服务在应答。
-    """
+    """探测端口上是不是已经有服务在监听。"""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.settimeout(0.3)
         return probe.connect_ex((host, port)) == 0

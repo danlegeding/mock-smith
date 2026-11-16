@@ -1,12 +1,4 @@
-"""D3 验收：把 JD + 简历各解析一份，检查 profile 字段非空且合理。
-
-跑法（在项目根目录）：
-    python scripts/check_parse.py
-    python scripts/check_parse.py --jd data/jds/02-ai-agent-develop.md --resume data/resumes/sample-01-strong.md
-
-验收标准（DESIGN.md §9 的 D3）：喂一份 JD+简历，输出两个 profile，
-字段非空且合理。这里把"合理"写成 7 条硬检查——不靠肉眼看。
-"""
+"""D3 验收：把 JD + 简历各解析一份，检查 profile 字段非空且合理。"""
 
 from __future__ import annotations
 

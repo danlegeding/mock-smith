@@ -1,22 +1,4 @@
-﻿"""D4 验收：match_gap 有没有把「有 / 沾边 / 没有」判对。
-
-跑法：
-    conda activate interview-agent
-    python scripts/check_gap.py
-
-它会做三件事：
-1. 解析 JD + 简历（**调真实模型**，两次；解析结果会缓存到 `.cache/parse/`，
-   第二次跑就是瞬时的 —— 改 match_gap 的代码不影响这两份 profile）
-2. 调 `match_gap` 节点，拿到 gap_map
-3. 一组断言，其中最有用的三条：
-   - **evidence 不许编**：要么是空字符串，要么必须是简历原文里逐字存在的片段
-   - **empty evidence ⇔ missing**：判 missing 却填了 evidence、或者判 weak 却给不出证据，都算错
-   - **几条固定答案**：Python / Docker 必须 strong，PostgreSQL 必须 weak（简历只有 MySQL），
-     LangGraph 必须 weak（简历只有 LangChain）—— 这三条是你和各版本实现之间的"契约"
-
-为什么 evidence 这条最重要：面试时你说"我让模型标出证据"，面试官第一个问题就是
-"模型编的怎么办"。这个断言就是你准备好的答案。
-"""
+"""D4 验收：match_gap 有没有把「有 / 沾边 / 没有」判对。"""
 
 from __future__ import annotations
 

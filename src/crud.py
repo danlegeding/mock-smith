@@ -1,15 +1,4 @@
-"""业务表的全部读写都在这里（sessions / reports）。
-
-结构照抄 `fastapi_code/16.通过脚本的方式添加数据库数据/crud16.py`：
-「一个实体一组 async 函数」——建、查、改、删各一个函数，路由只调这些函数，
-不直接写 `SessionRecord.create(...)`。这样 ORM 用在哪、怎么用，只看这一个文件就够。
-
-和教程的三点不同（都是刻意的）：
-1. 教程的函数里 `try/except: print(...)` 吞掉异常——脚本里可以，接口里不行：
-   吞掉异常会让接口返回 200 假成功，这里**让异常往上抛**，由 `src/api/errors.py` 统一转 500。
-2. 教程的 `init()` 在这里不需要：建表由 `src/orm.py` 的 `init_db()` 在应用 lifespan 里做。
-3. 教程把 `db_url` 写死在代码里，本项目从 `.env` 读（`src/orm.py` 的 `tortoise_config()`）。
-"""
+"""业务表的全部读写都在这里（sessions / reports）。"""
 
 from __future__ import annotations
 
@@ -42,12 +31,7 @@ async def finish_session(session: SessionRecord) -> None:
 
 # ------------------------------------------------------------------ 报告 reports
 async def save_report(session: SessionRecord, report: dict[str, Any], **extra: Any) -> ReportRecord:
-    """把图里生成的报告落成一行，外键指回会话。
-
-    `report` 是 `state["report"]`（`Report.model_dump(mode="json")` 的结果）；
-    其余统计字段（均分、轮数、未覆盖维度）由调用方算好通过 `extra` 传进来——
-    这里只负责「写」，不做业务判断。
-    """
+    """把图里生成的报告落成一行，外键指回会话。"""
     return await ReportRecord.create(session=session, **report, **extra)
 
 

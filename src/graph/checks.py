@@ -1,9 +1,4 @@
-"""确定性校验：判断一段引文是否真的出现在原文里。
-
-这个文件存在的理由只有一个：**"模型说它核对过了"不算核对。**
-agent 里那个 `verify_quote` 工具是给模型自查用的；出节点之后，代码还要用同一套规则
-再核一遍。两道关都过，引文才算真。否则 evidence_quote 就成了"模型觉得它在原文里"。
-"""
+"""确定性校验：判断一段引文是否真的出现在原文里。"""
 
 from __future__ import annotations
 
@@ -21,12 +16,7 @@ _ID_TOKEN = re.compile(r"(?<![A-Za-z0-9_])[ps]\d{1,2}(?![A-Za-z0-9_])")
 
 
 def strip_internal_ids(text: str) -> str:
-    """把题干里的内部 id（s1/p1 这类）去掉，只留候选人能读懂的话。
-
-    模型偶尔会把 id 念进问题里，实测出现过：
-    「p1 这个问答助手里，文档怎么切分和召回的？」——候选人看到 p1 一脸问号。
-    id 是给我们内部对账用的（evidence_ref 里已经有了），不该出现在候选人面前。
-    """
+    """把题干里的内部 id（s1/p1 这类）去掉，只留候选人能读懂的话。"""
     cleaned = _ID_TOKEN.sub("", text)
     cleaned = re.sub(r"\s{2,}", " ", cleaned)
     return re.sub(r"^[\s：:，,、。.]+", "", cleaned).strip()

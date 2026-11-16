@@ -41,11 +41,7 @@ class TurnOut(BaseModel):
 
 
 class PdfUploadOut(BaseModel):
-    """接口出参：一份 PDF 被转成 md 并落盘之后的结果。
-
-    同时返回全文（`markdown`）——前端拿到就能直接塞进编辑框，不用再发一次请求。
-    简历/JD 一般几 KB，带上全文不心疼。
-    """
+    """接口出参：一份 PDF 被转成 md 并落盘之后的结果。"""
 
     kind: Literal["jd", "resume"] = Field(description="上传的是哪类材料")
     filename: str = Field(description="原始文件名")

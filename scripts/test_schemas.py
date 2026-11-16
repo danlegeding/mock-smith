@@ -1,12 +1,4 @@
-"""数据契约（src/model/）的验收测试 —— 这是「契约」，不是我给的参考答案。
-
-跑法：
-    conda activate interview-agent
-    cd "D:\\Python——project\\mock-interview"
-    python scripts/test_schemas.py
-
-全 PASS 才算 src/model/ 写对了。某个 FAIL 就照着提示改，别看 _solutions。
-"""
+"""数据契约（src/model/）的验收测试 —— 这是「契约」，不是我给的参考答案。"""
 
 from __future__ import annotations
 

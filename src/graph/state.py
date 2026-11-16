@@ -1,34 +1,10 @@
-"""图里流动的"那一袋数据"（state），以及它里面每一格装的是什么形状。
-
-在 LangGraph 里，节点之间不直接互相传参，而是共享同一个 state：
-每个节点返回一个字典，框架帮你把字典**合并**进 state，下一个节点就能读到。
-
-`total=False` 的意思是：这些键不要求一开始就全部存在。
-- 图开始时只有 `jd_text` / `resume_text`；
-- `parse_inputs` 跑完才出现 `jd_profile` / `resume_profile`；
-- `match_gap` 跑完才出现 `gap_map`；
-- `plan_questions` 跑完才出现 `question_plan`。
-
-⚠️ 只有写在这个类里的键才会被保留：节点返回了一个没声明的键，LangGraph 不会报错，
-而是直接丢掉。排查"节点明明 return 了，下游读不到"的时候先看这里。
-
-为什么字段都写成 `dict` 而不是 Pydantic 对象：
-state 要整个存进数据库（checkpointer），数据库只认能变成 JSON 的普通数据。
-Pydantic 对象在节点里用，出了节点就 `model_dump(mode="json")` 成 dict。
-
-下面那些 `XxxDict` 就是"`src/model/` 里某个 Pydantic 模型 dump 成 JSON 后的样子"：
-字段名完全一致，唯一的区别是**枚举值变成了字符串**（`Dimension.TECH_DEPTH` → `"tech_depth"`）。
-它们只用来标注类型、帮助看代码，运行时不参与任何校验。
-
-改 `src/model/` 里的字段后要同步这里——`scripts/check_state_types.py` 会校验两边键名是否一致。
-"""
+"""图里流动的"那一袋数据"（state），以及它里面每一格装的是什么形状。"""
 
 from __future__ import annotations
 
 from typing import TypedDict
 
 
-# ---------------------------------------------------------------- 简历 / JD
 # 对应 src/model/profile.py
 
 
@@ -78,7 +54,6 @@ class ResumeProfileDict(TypedDict):
     education: str
 
 
-# ---------------------------------------------------------------- 缺口匹配
 # 对应 src/model/gap.py
 
 
@@ -92,7 +67,6 @@ class GapItemDict(TypedDict):
     probe_angle: str
 
 
-# ---------------------------------------------------------------- 题目
 # 对应 src/model/question.py
 
 
@@ -107,7 +81,6 @@ class QuestionDict(TypedDict):
     kind: str  # QuestionKind 枚举值：opening / followup / scenario
 
 
-# ---------------------------------------------------------------- 评分
 # 对应 src/model/score.py
 
 
@@ -129,11 +102,7 @@ class DimensionScoreDict(TypedDict):
 
 
 class AnswerScoreDict(TypedDict):
-    """`AnswerScore` 的 JSON 形态：一次回答的完整评分。
-
-    注意最后两个：`valid` / `avg` 是 Pydantic 的 computed_field，
-    dump 时会算出来一起输出，所以这里也必须有。
-    """
+    """`AnswerScore` 的 JSON 形态：一次回答的完整评分。"""
 
     dimension_scores: dict[str, DimensionScoreDict]  # 键是 Dimension 枚举值
     signals: SignalsDict
@@ -141,7 +110,6 @@ class AnswerScoreDict(TypedDict):
     avg: float  # 各维度平均分
 
 
-# ---------------------------------------------------------------- 一轮问答 / 决策 / 报告
 # 对应 src/model/turn.py、src/model/decision.py、src/model/report.py
 
 
@@ -188,7 +156,6 @@ class ReportDict(TypedDict):
     next_steps: list[str]  # 正好 3 条
 
 
-# ---------------------------------------------------------------- 整场面试
 
 
 class InterviewState(TypedDict, total=False):

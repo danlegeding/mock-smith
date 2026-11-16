@@ -1,17 +1,4 @@
-"""D1.5 验收：Tortoise ORM 这一层能不能用（读 → 写 → 查 → 外键 → 删）。
-
-跑法（在项目根目录，先 conda activate interview-agent）：
-    python scripts/check_orm.py
-
-它验证 7 件事，全 PASS 才算这层通了：
-1. 能连上库、能建表（sessions / reports）
-2. 能插入一条面试记录和它的报告
-3. 读回来字段不变（特别是 JSONB 里的中文和嵌套结构）
-4. 外键能顺着取到另一张表（prefetch_related）
-5. 列的类型确实是 jsonb（不是 text 冒充）
-6. 能做 SQL 聚合——这正是"不用 checkpointer 的 JSONB blob 存业务数据"的理由
-7. 删面试记录时报告跟着删（外键 ON DELETE CASCADE 真的生效）
-"""
+"""D1.5 验收：Tortoise ORM 这一层能不能用（读 → 写 → 查 → 外键 → 删）。"""
 
 from __future__ import annotations
 

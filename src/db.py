@@ -1,13 +1,4 @@
-"""数据库：连接池 + checkpointer + 自检。
-
-整个进程只有一个连接池。checkpointer 用它把图的状态（每一轮问答）
-落到 Postgres 里，所以进程重启/断线后还能接着聊——这就是
-「断线续面」的实现点，thread_id 直接复用 session_id。
-
-注意分工：本文件只管**图的状态**（psycopg 同步池）。
-我们自己的业务表（sessions / reports）在 `src/orm.py` + `src/orm_models.py`，
-用的是 Tortoise ORM + asyncpg，另一条连接，别在这里塞业务表。
-"""
+"""数据库：连接池 + checkpointer + 自检。"""
 
 from __future__ import annotations
 
@@ -25,13 +16,7 @@ _pool: ConnectionPool | None = None
 
 # 全局只创建一个连接池
 def get_pool() -> ConnectionPool:
-    """第一次调用时创建，之后复用同一个。
-
-    坑：autocommit=True 必须带。实测不带它：写入当场成功、同一条连接也读得到，
-        但换一条连接查就是 0 行——因为从头到尾没有 commit，连接一关就回滚。
-        症状不是报错，而是「重启后状态全没了」，属于最难查的那类。
-        row_factory=dict_row 是给我们自己按列名取值的（LangGraph 内部会自己设）。
-    """
+    """第一次调用时创建，之后复用同一个。"""
     global _pool
     if _pool is None:
         pool = ConnectionPool(
@@ -62,23 +47,14 @@ def close_pool() -> None:
 
 
 def make_checkpointer() -> PostgresSaver:
-    """用上面的池子造一个 checkpointer。
-
-    坑：返回之前必须先调一次 .setup()，它会自动建 3 张表。
-        setup() 重复调用是安全的，所以每次启动都调没关系。
-    """
+    """用上面的池子造一个 checkpointer。"""
     saver = PostgresSaver(get_pool())
     saver.setup()
     return saver
 
 
 def check_db() -> dict:
-    """自检脚本的全部逻辑：
-    1) 能连上并 SELECT 1
-    2) 查 pg_extension 里有没有 vector
-    3) 查 checkpoints 表存在不存在
-    返回 {"ok": bool, "vector": bool, "checkpoint_tables": bool}
-    """
+    """自检脚本的全部逻辑："""
     result: dict = {"ok": False, "vector": False, "checkpoint_tables": False}
     try:
         with get_pool().connection() as conn:

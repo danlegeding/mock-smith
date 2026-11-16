@@ -1,11 +1,4 @@
-"""前端调后端的唯一出口：所有 HTTP 调用都收在这个文件里。
-
-为什么单独抽一个文件：
-- UI 代码只关心"拿到数据怎么画"，不关心 URL 拼法、超时、错误形状；
-- 后端地址只有一个地方可改（`API_BASE_URL`），换部署环境不用翻 UI 代码。
-
-后端文档：启动 `uvicorn src.app:app --port 8010` 后打开 http://127.0.0.1:8010/docs
-"""
+"""前端调后端的唯一出口：所有 HTTP 调用都收在这个文件里。"""
 
 from __future__ import annotations
 
@@ -21,12 +14,7 @@ TIMEOUT_SECONDS = 600.0
 
 
 def _trust_env() -> bool:
-    """默认**不**相信环境里的代理变量。
-
-    踩过的坑：本机 HTTP_PROXY 被设过之后，httpx 会拿它对 `127.0.0.1:8010` 发请求，
-    代理不认识这个地址就回 502 Bad Gateway——服务明明是活的，前端却"连不上"。
-    本机回环地址应该直连；如果后端真部署在需要代理的远端，设 `API_TRUST_ENV=1`。
-    """
+    """默认**不**相信环境里的代理变量。"""
     return os.getenv("API_TRUST_ENV", "0") == "1"
 
 
@@ -76,10 +64,7 @@ def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
 
 
 def load_transcript(session_id: str) -> dict[str, Any]:
-    """一场面试的问答记录：`{session_id, status, turns: [...], pending_question}`。
-
-    `pending_question` 是还没回答的那道题（已结束时为 None）——「继续这场面试」靠它恢复面试页。
-    """
+    """一场面试的问答记录：`{session_id, status, turns: [...], pending_question}`。"""
     with _client() as client:
         resp = client.get(f"/sessions/{session_id}/transcript")
         resp.raise_for_status()
@@ -87,8 +72,7 @@ def load_transcript(session_id: str) -> dict[str, Any]:
 
 
 def upload_pdf(filename: str, content: bytes, kind: str) -> dict[str, Any]:
-    """上传 JD / 简历 PDF：后端转成 markdown 存进 `data/`，返回
-    `{kind, filename, saved_path, chars, markdown}`（`markdown` 直接填进编辑框）。"""
+    """上传 JD / 简历 PDF：后端转成 markdown 存进 `data/`，返回"""
     with _client() as client:
         resp = client.post(
             "/uploads/pdf",

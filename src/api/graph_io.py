@@ -1,20 +1,4 @@
-"""图操作的公共原语：被 2 个以上端点用到的那几个函数才放这里。
-
-为什么有这个文件：按「调用者与被调用者放在一起」组织代码时，大多数函数应该待在
-调用它的那个端点文件里（`create.py` 里的 `_start_interview`、`answer.py` 里的
-`_submit_answer`）。但下面这三个是被**多个**端点共用的——放进任何一个端点文件，
-另外两个就得 import 隔壁端点，或者复制一份：
-
-    config_for       3 个端点都要构造 thread_id 配置
-    read_snapshot    3 个端点都要读图的状态快照
-    invoke_graph     2 个端点都要推进图
-    build_turn_out   2 个端点要把"图停在哪"翻译成接口响应
-
-共用的东西集中在一个明确标注「公共」的文件里，比复制三份好：改一处不会漏另外两处。
-
-所有图调用都走 `run_in_threadpool`：图是同步的（psycopg 连接池同步），
-在 async 端点里直接调会卡住事件循环——本地单人跑看不出来，一并发就现原形。
-"""
+"""图操作的公共原语：被 2 个以上端点用到的那几个函数才放这里。"""
 
 from __future__ import annotations
 
@@ -47,11 +31,7 @@ def first_interrupt(snapshot: Any) -> dict[str, Any] | None:
 
 
 async def read_snapshot(graph: Any, config: dict[str, Any]) -> Any:
-    """读一次图的状态快照（一个 DB roundtrip）。
-
-    快照里同时有 `values`（全部 state）和 `tasks[].interrupts`（停在哪一题），
-    所以「要不要给下一题」和「state 里有什么」一次读全，别读两遍。
-    """
+    """读一次图的状态快照（一个 DB roundtrip）。"""
     return await run_in_threadpool(graph.get_state, config)
 
 

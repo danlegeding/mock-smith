@@ -1,20 +1,4 @@
-"""命令行跑一次图的前半段：parse_inputs → match_gap → plan_questions。
-
-为什么要有这个文件（它以后也不会被删）：
-1. 面试现场演示：一条命令，不用起 API、不用开前端；
-2. 改完 prompt / 判档规则，想立刻看效果，不用走整条 FastAPI 链路；
-3. 看 state 到底长什么样 —— 排查"数据在哪一步丢了"最直接的地方。
-
-跑法：
-    conda activate interview-agent
-    python scripts/run_graph.py                    # 第一次：解析 + 匹配 + 出题
-    python scripts/run_graph.py                    # 再跑一次：直接从数据库续上，不重跑
-    python scripts/run_graph.py --thread t2        # 换一个新会话
-    python scripts/run_graph.py --limit 40         # 只看前 40 条缺口（缺口多了刷屏）
-
-注意：同一个 thread_id 跑第二次时，图不会重跑，而是从 checkpointer 把上次的 state
-读回来 —— 这就是"断点续跑"，后面多轮面试全靠它。
-"""
+"""命令行跑一次图的前半段：parse_inputs → match_gap → plan_questions。"""
 
 from __future__ import annotations
 

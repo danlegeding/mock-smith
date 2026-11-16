@@ -1,15 +1,4 @@
-"""模拟面试 Agent 的演示界面：开面 → 多轮问答 → 报告，三屏搞定。
-
-运行（在项目根目录）：
-    streamlit run web/app.py
-需要后端先跑起来：
-    uvicorn src.app:app --port 8010
-
-设计原则：
-- 所有状态放 `st.session_state`，刷新页面不丢；后端才是真相（checkpointer + reports 表），
-  这里存的只是"当前要画什么"。
-- 一个函数画一屏，屏幕之间靠 `page` 字段切换，避免 Streamlit 里到处 `rerun` 绕晕。
-"""
+"""模拟面试 Agent 的演示界面：开面 → 多轮问答 → 报告，三屏搞定。"""
 
 from __future__ import annotations
 
@@ -135,10 +124,7 @@ def read_text(path: Path) -> str:
 
 
 def _upload_pdf(kind: str, label: str) -> None:
-    """上传 PDF → 后端转成 markdown 存进 `data/` → 全文写进 session_state 供编辑框使用。
-
-    同一份文件只上传一次（按「文件名 + 字节数」判断），避免每次 rerun 都重新转一遍。
-    """
+    """上传 PDF → 后端转成 markdown 存进 `data/` → 全文写进 session_state 供编辑框使用。"""
     upload = st.file_uploader(f"上传{label} PDF", type=["pdf"], key=f"pdf_{kind}")
     if upload is None:
         return
@@ -381,12 +367,7 @@ def render_transcript(transcript: dict) -> None:
 
 
 def _resume_state(session_id: str, transcript: dict) -> dict | None:
-    """把「记录页拿到的 transcript」还原成面试页需要的 state。
-
-    返回 None 表示这一场没有未回答的题（已结束或已出报告），没法继续。
-    为什么只靠 transcript 就够：图的 state 一直在 checkpointer 里，
-    端点已经把它摊成 `turns` + `pending_question`；前端不需要再问「下一题是什么」。
-    """
+    """把「记录页拿到的 transcript」还原成面试页需要的 state。"""
     pending = transcript.get("pending_question")
     if not pending:
         return None
@@ -411,12 +392,7 @@ def _resume_state(session_id: str, transcript: dict) -> dict | None:
 
 
 def _format_time(raw: str | None) -> str:
-    """把接口给的 ISO 时间显示成 `年:月:日 小时:分钟`（本机时区）。
-
-    后端存的是 `timestamptz`，`isoformat()` 出来是 UTC（`+00:00`）；
-    `astimezone()` 不带参数会转成本机时区，避免界面上比实际时间慢 8 小时。
-    解析失败就原样返回，别为了格式化把整页搞崩。
-    """
+    """把接口给的 ISO 时间显示成 `年:月:日 小时:分钟`（本机时区）。"""
     if not raw:
         return ""
     try:
@@ -532,12 +508,7 @@ def main() -> None:
 
 # ---------------------------------------------------------------- 启动方式
 def _running_under_streamlit() -> bool:
-    """判断当前脚本是不是被 `streamlit run` 拉起来的。
-
-    在 Streamlit 运行时里，`get_script_run_ctx()` 有值；直接用 `python web/app.py`
-    跑则没有——那种情况下每个 `st.*` 调用都会往终端吐一行
-    `WARNING ... Thread 'MainThread': missing ScriptRunContext!`，刷屏且页面不显示。
-    """
+    """判断当前脚本是不是被 `streamlit run` 拉起来的。"""
     try:
         from streamlit.runtime.scriptrunner import get_script_run_ctx
 
@@ -556,11 +527,7 @@ def _port_in_use(host: str, port: int) -> bool:
 
 
 def _launch_streamlit() -> int:
-    """用 `python web/app.py` 启动时，把控制权交给 Streamlit 自己的运行器。
-
-    这样后端(`python src/app.py`)和前端(`python web/app.py`)启动方式就对称了，
-    也不用手动记 `-m streamlit run` 这串。
-    """
+    """用 `python web/app.py` 启动时，把控制权交给 Streamlit 自己的运行器。"""
     import argparse
     import subprocess
 
