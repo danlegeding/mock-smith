@@ -23,7 +23,10 @@ from src.graph.checks import normalize, quote_in_answer
 from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.state import GapItemDict, InterviewState, TurnDict
 from src.llm import call_json
+from src.log import get_logger
 from src.model import DIMENSION_LABELS, Dimension, Report, ReportDraft
+
+logger = get_logger(__name__)
 
 MAX_ITEMS = 3  # 亮点 / 弱项各最多 3 条
 
@@ -155,7 +158,7 @@ def generate_report(state: InterviewState) -> dict[str, Any]:
     strengths = _keep_quoted(draft.strengths, answers)
     weaknesses = _keep_quoted(draft.weaknesses, answers)
     if draft.strengths and not strengths:
-        print(f"  [report] {len(draft.strengths)} 条亮点引文核对失败，已丢弃")
+        logger.info("  [report] %d 条亮点引文核对失败，已丢弃", len(draft.strengths))
     if not answers:
         strengths = []
 
@@ -172,7 +175,7 @@ def generate_report(state: InterviewState) -> dict[str, Any]:
         next_steps=draft.next_steps,
     )
 
-    print(f"  [report] {verdict}；亮点 {len(strengths)} 条，弱项 {len(weaknesses)} 条")
+    logger.info("  [report] %s；亮点 %d 条，弱项 %d 条", verdict, len(strengths), len(weaknesses))
     return {"report": report.model_dump(mode="json")}
 
 

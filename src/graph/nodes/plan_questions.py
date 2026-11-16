@@ -35,7 +35,10 @@ from src.graph.nodes.parse_inputs import render_prompt
 from src.graph.policy import active_dimensions
 from src.graph.state import GapItemDict, InterviewState, JDProfileDict, ResumeProfileDict
 from src.llm import call_json
+from src.log import get_logger
 from src.model import DIMENSION_LABELS, Question, QuestionPlan
+
+logger = get_logger(__name__)
 
 PLAN_SIZE = 10
 
@@ -146,7 +149,7 @@ def plan_questions(state: InterviewState) -> dict[str, Any]:
     kept = _filter_valid_questions(plan.questions, refs, seen, only_dims=allowed)
     dropped = len(plan.questions) - len(kept)
     if dropped:
-        print(f"[plan_questions] 丢掉 {dropped} 道题（id 不合法 / 题干为空 / 重复）")
+        logger.info("[plan_questions] 丢掉 %d 道题（id 不合法 / 题干为空 / 重复）", dropped)
 
     # 覆盖兜底：prompt 要求「每个维度至少 1 题」，但模型实测会漏（d7-agent-3 缺沟通表达）。
     # 漏了就再要一轮，只针对漏掉的维度补题——这是代码兜底，不是靠 prompt 自律。
@@ -154,7 +157,7 @@ def plan_questions(state: InterviewState) -> dict[str, Any]:
     missing = [d for d in active_dimensions(resume_profile) if d not in {q.dimension for q in kept}]
     if missing:
         names = "、".join(f"{DIMENSION_LABELS[d]}({d.value})" for d in missing)
-        print(f"[plan_questions] 题池漏了维度：{names} → 补一轮")
+        logger.info("[plan_questions] 题池漏了维度：%s → 补一轮", names)
         extra_user = (
             f"{user_message}\n\n## 额外要求（第二轮补题）\n"
             f"第一轮漏掉了这些维度：{names}。\n"
@@ -166,6 +169,6 @@ def plan_questions(state: InterviewState) -> dict[str, Any]:
     counts: dict[str, int] = {}
     for question in kept:
         counts[question.dimension.value] = counts.get(question.dimension.value, 0) + 1
-    print(f"[plan_questions] 题池 {len(kept)} 道：{counts}")
+    logger.info("[plan_questions] 题池 %d 道：%s", len(kept), counts)
 
     return {"question_plan": [q.model_dump(mode="json") for q in kept[:PLAN_SIZE]]}

@@ -34,7 +34,10 @@ from src.graph.rubrics import rubric_text
 from src.graph.state import InterviewState, JDProfileDict, QuestionDict
 from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
+from src.log import get_logger
 from src.model import AnswerScore, Dimension, DimensionScore, DIMENSION_LABELS
+
+logger = get_logger(__name__)
 
 
 def _render_user_message(question: QuestionDict, answer: str, jd: JDProfileDict) -> str:
@@ -69,7 +72,7 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
     dimension = Dimension(question["dimension"])
 
     if turn.get("skipped"):
-        print("  [evaluate] 这一轮是跳过，不评分")
+        logger.info("  [evaluate] 这一轮是跳过，不评分")
         return {}
 
     answer = turn["answer"]
@@ -118,7 +121,7 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
     score: AnswerScore | None = result.get("structured_response")
 
     if score is None:
-        print("  [evaluate] 没拿到结构化评分，记一个无证据低分")
+        logger.info("  [evaluate] 没拿到结构化评分，记一个无证据低分")
         score = AnswerScore(
             dimension_scores={
                 dimension: DimensionScore(score=1, evidence_quote="", comment="本轮评分失败，无证据")
@@ -130,7 +133,10 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
 
     # 确定性复检：模型说核对过不算数，这里按同一套规则再核一遍
     if item is not None and item.evidence_quote and not quote_in_answer(item.evidence_quote, answer):
-        print(f"  [evaluate] 引文复检未通过，丢弃维度 {dimension.value}（模型声称核对过，但原文里没有）")
+        logger.info(
+            "  [evaluate] 引文复检未通过，丢弃维度 %s（模型声称核对过，但原文里没有）",
+            dimension.value,
+        )
         item = None
 
     checked = AnswerScore(
@@ -142,11 +148,14 @@ def evaluate_answer(state: InterviewState) -> dict[str, Any]:
     turns[-1] = {**turn, "score": checked.model_dump(mode="json")}
 
     if item is None:
-        print(f"  [evaluate] {DIMENSION_LABELS[dimension]}: 无有效评分（证据核验失败）")
+        logger.info("  [evaluate] %s: 无有效评分（证据核验失败）", DIMENSION_LABELS[dimension])
     else:
         mark = "有效" if checked.valid else "无证据"
-        print(
-            f"  [evaluate] {DIMENSION_LABELS[dimension]}: {item.score} 分（{mark}）"
-            f" avg={checked.avg:.1f}"
+        logger.info(
+            "  [evaluate] %s: %d 分（%s） avg=%.1f",
+            DIMENSION_LABELS[dimension],
+            item.score,
+            mark,
+            checked.avg,
         )
     return {"turns": turns}

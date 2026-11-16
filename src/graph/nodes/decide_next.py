@@ -35,7 +35,10 @@ from src.graph.policy import MAX_TURNS, active_dimensions, counted_turns
 from src.graph.state import InterviewState, QuestionDict, TurnDict
 from src.graph.trace import tool_callbacks
 from src.llm import get_chat_model
+from src.log import get_logger
 from src.model import Dimension, DIMENSION_LABELS, Decision, DecideAction
+
+logger = get_logger(__name__)
 
 
 def _format_turn_history(turns: list[TurnDict]) -> str:
@@ -168,7 +171,7 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
 
     if decision is None:
         decision = Decision(action=DecideAction.NEXT, reason="没拿到结构化决策，按题池顺序继续")
-        print("  [decide] 没拿到结构化决策 → 退回 next")
+        logger.info("  [decide] 没拿到结构化决策 → 退回 next")
 
     # 硬线 1：轮数到顶，必须结束（agent 说什么都不算）。跳过的不计轮数。
     if used >= MAX_TURNS and decision.action != DecideAction.END:
@@ -191,7 +194,7 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
         ]
         if uncovered:
             names = "、".join(DIMENSION_LABELS[Dimension(d)] for d in uncovered)
-            print(f"  [decide] 拦截提前结束：{names} 还没问到 → 改为继续")
+            logger.info("  [decide] 拦截提前结束：%s 还没问到 → 改为继续", names)
             decision = Decision(
                 action=DecideAction.NEXT,
                 reason=f"还没覆盖到的维度：{names}，覆盖不全不能结束 → 先补覆盖率",
@@ -215,14 +218,14 @@ def decide_next_action(state: InterviewState) -> dict[str, Any]:
                 action=DecideAction.NEXT,
                 reason=f"追问引文不合法（原文没有『{anchor[:20]}』）→ 降级为按顺序问下一题",
             )
-            print("  [decide] 追问的 anchor_quote 不在上一轮回答里 → 降级为 next")
+            logger.info("  [decide] 追问的 anchor_quote 不在上一轮回答里 → 降级为 next")
 
     if decision.action == DecideAction.RAISE_DIFFICULTY:
         next_difficulty = 3
     elif decision.action == DecideAction.LOWER_DIFFICULTY:
         next_difficulty = 1
 
-    print(f"  [decide] {decision.action.value}：{decision.reason}")
+    logger.info("  [decide] %s：%s", decision.action.value, decision.reason)
 
     return {
         "decision": decision.model_dump(mode="json"),
