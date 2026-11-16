@@ -36,6 +36,10 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
 
 ### 图（`src/graph/build.py`）
 
+![状态图](docs/architecture.png)
+
+`build_graph()` 编译后的实际形状（`docs/architecture.png` 由 `graph.get_graph().draw_mermaid_png()` 生成）。
+
 ```
 START → parse_inputs → match_gap → plan_questions → select_question ⇄ ask
                                                           ▲            │
