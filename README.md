@@ -61,7 +61,8 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
 
 ### 图（`src/graph/build.py`）
 
-<img width="1774" height="887" alt="AI模拟面试Agent技术架构" src="https://github.com/user-attachments/assets/68fa01e6-9478-4b9b-8620-c5dc9e253cb8" />
+<img width="3548" height="1774" alt="AI模拟面试Agent技术架构 (2)" src="https://github.com/user-attachments/assets/41aef8cf-6951-4d6b-afdf-272b740670c5" />
+
 
 
 `build_graph()` 编译后的实际形状（`docs/architecture.png` 由 `graph.get_graph().draw_mermaid_png()` 生成）。
