@@ -213,8 +213,8 @@ src/
   app.py        FastAPI 组装与启动
 web/            Streamlit 前端（api_client.py + app.py 四屏）
 scripts/        验收脚本 + 命令行演示
-data/           样本 JD（6 份）和简历（5 份），均为虚构
-docs/           架构图 + 界面截图（screenshots/）
+data/           样本 JD（7 份，含数据分析 / 后端 / RAG 等方向）和简历（6 份），均为虚构
+docs/           架构图（architecture.png）；界面截图见上方，托管在 GitHub
 docker/         init.sql（建 pgvector 扩展）
 DESIGN.md       设计文档：需求、口径、指标、日程
 notes.md        开发笔记：踩过的坑、prompt 迭代记录
