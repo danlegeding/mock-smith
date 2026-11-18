@@ -22,16 +22,20 @@ JD + 简历 ──► 解析 ► 缺口匹配 ► 出题池 ► 提问 ─► �
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/01-start.png" alt="开面页" width="430"></td>
-    <td><img src="docs/screenshots/02-interview.png" alt="面试中" width="430"></td>
+    <td><img width="1573" height="1024" alt="image" src="https://github.com/user-attachments/assets/0927a933-879b-4a0c-bfad-a59766820cde" />
+</td>
+    <td><img width="1573" height="1024" alt="image" src="https://github.com/user-attachments/assets/9fb28012-8c2f-4249-bc9c-8cca42b1e66b" />
+</td>
   </tr>
   <tr>
     <td align="center">开面页：填 JD 与简历，或从 PDF 上传</td>
     <td align="center">面试中：一次一问，支持追问与换维度</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/03-report.png" alt="报告页" width="430"></td>
-    <td><img src="docs/screenshots/04-records.png" alt="记录页" width="430"></td>
+    <td><img width="1573" height="963" alt="image" src="https://github.com/user-attachments/assets/363c2801-9ce4-4879-8cf5-c1d79aa590a7" />
+</td>
+    <td><img width="1573" height="964" alt="image" src="https://github.com/user-attachments/assets/742b30b6-5b04-49d5-bfed-a3cdf474b06c" />
+</td>
   </tr>
   <tr>
     <td align="center">报告页：分维度评分，每条结论都带原话引用</td>
