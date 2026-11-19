@@ -19,7 +19,7 @@ DRAFT_DIR = GOLD_DIR / "_drafts"
 TEMPLATE = """\
 # ---- 填空说明（填完删掉这段注释）----
 # candidate_answer：你（或同学）针对这道题的真实回答，20 字以上，不要润色。
-# human_quality_level：bad（明显不足/只有概念）/ ok（达到实习水平）/ good（超出预期），三选一。
+# human_quality_level：low（明显不足/只有概念）/ medium（达到实习水平）/ high（超出预期），三选一。
 # human_evidence_quote：从你自己的回答里挑一句最能支撑档位的话，逐字照抄。
 # annotation_note：一句话说明为什么标这一档。
 # 填完把本文件挪到 src/eval/gold/ 下（文件名保持不变），再跑 scripts/check_gold.py。

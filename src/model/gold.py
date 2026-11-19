@@ -11,9 +11,9 @@ from pydantic import BaseModel, Field, computed_field
 from .enums import Dimension
 
 # 人工档位 → rubric 分数锚点（1/3/5）。改这个映射就等于改评测口径，别随手改。
-QualityLevel = Literal["bad", "ok", "good"]
+QualityLevel = Literal["low", "medium", "high"]
 
-LEVEL_TO_SCORE: dict[str, float] = {"bad": 1.0, "ok": 3.0, "good": 5.0}
+LEVEL_TO_SCORE: dict[str, float] = {"low": 1.0, "medium": 3.0, "high": 5.0}
 
 
 class GoldItem(BaseModel):
@@ -34,7 +34,7 @@ class GoldItem(BaseModel):
         min_length=20, description="候选人回答原文。人工标注时不要润色——评测要的就是真实水平"
     )
     human_quality_level: QualityLevel = Field(
-        description="人工档位：bad 明显不足 / ok 达到实习水平 / good 超出预期"
+        description="人工档位：low 明显不足 / medium 达到实习水平 / high 超出预期"
     )
     human_evidence_quote: str = Field(
         default="",

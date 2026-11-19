@@ -85,10 +85,10 @@ def _spearman(xs: list[float], ys: list[float]) -> float:
 
 def _level_of(score: float) -> str:
     if score < 2:
-        return "bad"
+        return "low"
     if score < 4:
-        return "ok"
-    return "good"
+        return "medium"
+    return "high"
 
 
 def main() -> int:
@@ -143,7 +143,7 @@ def main() -> int:
         rho = _spearman(xs, ys)
         mae = sum(abs(x - y) for x, y in zip(xs, ys)) / len(valid_rows)
         exact = sum(1 for r in valid_rows if _level_of(r["pred"]) == r["human_level"])
-        order = {"bad": 0, "ok": 1, "good": 2}
+        order = {"low": 0, "medium": 1, "high": 2}
         gaps = [abs(order[_level_of(r["pred"])] - order[r["human_level"]]) for r in valid_rows]
         print(f"Spearman ρ  {rho:.3f}   （10 条样本时 ρ ≥ 0.70 算可用）")
         print(f"MAE         {mae:.2f}   （满分 5 分）")

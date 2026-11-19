@@ -8,7 +8,7 @@
 # 五个维度（复制其中一个，不要自己造）：
 #   tech_depth / project_authenticity / engineering_thinking / communication / job_match
 # 三个档位：
-#   bad 明显不足（说空话、答非所问） / ok 达到实习水平（说清楚了做法） / good 超出预期（有细节、有取舍、有量化）
+#   low 明显不足（说空话、答非所问） / medium 达到实习水平（说清楚了做法） / high 超出预期（有细节、有取舍、有量化）
 #
 # 删除下面所有以 # 开头的说明行再填也行；# 开头是注释，不影响解析。
 schema_version: 1
@@ -19,6 +19,6 @@ question_difficulty: 2
 candidate_answer: |
   这里写候选人的回答原文（不要润色，要保留它真实的毛病）。
   至少 20 个字。
-human_quality_level: ok
+human_quality_level: medium
 human_evidence_quote: "从回答里挑一句能支撑你判断的话"
 annotation_note: "一句话说明为什么标这档"

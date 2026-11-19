@@ -10,6 +10,6 @@ candidate_answer: |
   RetrievalQA 里把向量库当 retriever 传进去，prompt 里拼了历史对话。
   踩过最大的坑是 retriever 返回的 chunk 太长，把上下文塞爆了，回答直接开始胡编；
   后来限制 top_k=3 并且给每个 chunk 加了来源标题，效果才稳。
-human_quality_level: good
+human_quality_level: high
 human_evidence_quote: "后来限制 top_k=3 并且给每个 chunk 加了来源标题，效果才稳"
 annotation_note: "说清了机制也说了自己的调参过程，能看出真跑过；但没解释为什么不用 Agent 方案"

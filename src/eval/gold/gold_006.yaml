@@ -7,6 +7,6 @@ scoring_dimension: engineering_thinking
 question_difficulty: 2
 candidate_answer: |
   请求参数都用 Pydantic 模型校验，出错时统一用一个异常处理器返回固定结构；每个请求生成一个 request id 打进日志，出问题能按 id 串起来查。
-human_quality_level: ok
+human_quality_level: medium
 human_evidence_quote: "每个请求生成一个 request id 打进日志"
 annotation_note: "覆盖了校验、错误结构和日志三条，方向对，但没说怎么验证稳定性，也没提测试。"

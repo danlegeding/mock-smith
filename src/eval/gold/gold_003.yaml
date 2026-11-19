@@ -7,6 +7,6 @@ scoring_dimension: project_authenticity
 question_difficulty: 2
 candidate_answer: |
   用 LCEL 把 prompt、模型和解析器串成一条链，检索那步单独写了个函数返回文档列表，链里直接调用。会话历史是拼在 prompt 里的，没做单独的记忆模块。
-human_quality_level: ok
+human_quality_level: medium
 human_evidence_quote: "用 LCEL 把 prompt、模型和解析器串成一条链"
 annotation_note: "说清了链路的分层，但没提任何调参或踩坑，属于达到实习水平。"

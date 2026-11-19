@@ -13,7 +13,7 @@ from src.model import DIMENSIONS, GoldItem  # noqa: E402
 from src.model.gold import load_gold_item  # noqa: E402
 
 GOLD_DIR = ROOT / "src" / "eval" / "gold"
-LEVELS = ["bad", "ok", "good"]
+LEVELS = ["low", "medium", "high"]
 
 
 def _squash(text: str) -> str:
@@ -61,7 +61,7 @@ def main() -> int:
         preview = item.question_text.replace("\n", " ")[:24]
         print(
             f"✓ {path.stem:<10} {item.scoring_dimension.value:<22} "
-            f"{item.human_quality_level:<4} {item.human_score:.1f}  「{preview}…」"
+            f"{item.human_quality_level:<6} {item.human_score:.1f}  「{preview}…」"
         )
 
     if errors:

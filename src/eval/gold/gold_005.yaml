@@ -7,6 +7,6 @@ scoring_dimension: job_match
 question_difficulty: 2
 candidate_answer: |
   应该还好吧，我学过 LangChain 和 RAG，也做过项目，上手应该挺快的，剩下的可以边做边学。
-human_quality_level: bad
+human_quality_level: low
 human_evidence_quote: "应该还好吧"
 annotation_note: "只有态度没有依据，没说出差距具体在哪，也没说自己补过什么。"
